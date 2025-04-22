@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: my_postgres_db
+    environment:
+      POSTGRES_USER: colin
+      POSTGRES_PASSWORD: barkley
+      POSTGRES_DB: coursesDB
+    ports:
+      - "5432:5432"
+    volumes:
+        # route to were docker store info on your local machine using pgdata
+      - pgdata:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d:ro
+
+
+volumes:
+  # named volume that holds the actual PostgreSQL data
+  pgdata:

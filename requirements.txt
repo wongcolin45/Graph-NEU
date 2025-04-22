@@ -1,0 +1,4 @@
+psycopq2
+requests
+beautifulsoup4
+pandas
