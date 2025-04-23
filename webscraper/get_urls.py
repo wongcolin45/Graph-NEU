@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-from django.template.defaultfilters import unordered_list
+
 
 # URL for all course descriptions
 url = "https://catalog.northeastern.edu/course-descriptions/"

@@ -19,3 +19,7 @@ services:
 volumes:
   # named volume that holds the actual PostgreSQL data
   pgdata:
+
+
+#docker-compose down -v
+#docker-compose up --build

@@ -4,7 +4,6 @@ import re
 from bs4 import BeautifulSoup
 from get_urls import get_course_urls
 
-
 def get_credits(data):
     extracted = []
     for s in data:
@@ -16,6 +15,9 @@ def get_credits(data):
                 extracted.append(int(match.group(1)))  # single value
     return extracted
 
+
+
+
 def clean_course_code(s):
     return s.replace('\xa0', ' ').strip()
 
@@ -25,6 +27,7 @@ def get_course_codes(element):
     for i in range(0, len(a_elements), 2):
         course_codes.append(clean_course_code(a_elements[i].text))
     return course_codes
+
 
 def get_attribute_list(attributes_text):
     attributes = attributes_text.replace('Attribute(s): ', '')
@@ -38,7 +41,7 @@ def get_attribute_list(attributes_text):
     return clean_attributes
 
 
-columns = ['department_id', 'course_code', 'name', 'credits','description', 'corequisites', 'prerequisites', 'attributes']
+columns = ['department_tag', 'course_code', 'name', 'credits','description', 'corequisites', 'prerequisites', 'attributes', 'department']
 
 def create_df(url):
     response = requests.get(url)
@@ -46,6 +49,12 @@ def create_df(url):
     df = pd.DataFrame(columns=columns)
     # get div that stores each individual course
     course_blocks = soup.find_all('div', class_ = 'courseblock')
+
+    site_title = soup.find(id='site-title')
+    wrap = site_title.find('div', class_ = 'wrap')
+    parts = wrap.find('h1').text.strip().split(' ')
+    department = parts[0]
+
 
     for block in course_blocks:
         p = block.find('p', class_='courseblocktitle noindent')
@@ -89,7 +98,7 @@ def create_df(url):
 
         if None in [department_tag, course_code, name, credits, description, corequisites, prequisites, attributes]:
            continue
-        df.loc[len(df)] = [department_tag, course_code, name, credits, description, corequisites, prequisites, attributes]
+        df.loc[len(df)] = [department_tag, course_code, name, credits, description, corequisites, prequisites, attributes, department]
     return df
 
 

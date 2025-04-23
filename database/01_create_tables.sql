@@ -1,11 +1,7 @@
 
-
-
--- Drop dependent tables first
-DROP TABLE IF EXISTS course_prerequisites, corequisites, courses, departments, nu_path CASCADE;
-
--- Drop enum type
-DROP TYPE IF EXISTS corequisite_type;
+-- Reset Everything
+-- DROP TABLE IF EXISTS course_prerequisites, corequisites, courses, departments, attributes, course_attributes CASCADE;
+-- DROP TYPE IF EXISTS corequisite_type;
 
 CREATE TABLE departments (
     department_id SERIAL PRIMARY KEY,
@@ -15,7 +11,7 @@ CREATE TABLE departments (
 
 CREATE TABLE courses (
     course_id SERIAL PRIMARY KEY,
-    department_id INT NULL, -- allow to be null
+    department_id INT NOT NULL, -- allow to be null
     course_code INT NOT NULL,
     name TEXT NOT NULL,
     description TEXT,
@@ -32,10 +28,10 @@ CREATE TABLE corequisites (
     corequisite_id SERIAL PRIMARY KEY,
     course_id INT NULL,
     course_code INT NOT NULL,
-    type corequisite_type NOT NULL,
+    type corequisite_type NULL,
     name TEXT NOT NULL,
-    description TEXT,
-    credits INT DEFAULT 2,
+    description TEXT NULL,
+    credits INT DEFAULT 1,
     FOREIGN KEY (course_id) REFERENCES courses(course_id)
         ON UPDATE CASCADE
         ON DELETE SET NULL
@@ -53,8 +49,28 @@ CREATE TABLE course_prerequisites(
         ON DELETE CASCADE
 );
 
-CREATE TABLE nu_path (
-    name TEXT PRIMARY KEY
+CREATE TABLE attributes (
+    attribute_id SERIAL PRIMARY KEY,
+    tag TEXT,
+    name TEXT
+);
+
+CREATE TABLE course_attributes (
+    course_id INT NOT NULL,
+    attribute_id INT NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES courses(course_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (attribute_id) REFERENCES attributes(attribute_id)
+        ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
+
+-- TRUNCATE TABLE
+--     course_prerequisites,
+--     corequisites,
+--     courses,
+--     departments,
+--     attributes,
+--     course_attributes
+-- RESTART IDENTITY CASCADE;

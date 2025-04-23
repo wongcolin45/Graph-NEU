@@ -1,4 +1,4 @@
-psycopq2
+psycopg2-binary
 requests
 beautifulsoup4
 pandas
