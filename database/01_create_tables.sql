@@ -40,6 +40,7 @@ CREATE TABLE corequisites (
 CREATE TABLE course_prerequisites(
     course_id INT NOT NULL,
     prerequisite_id INT NOT NULL,
+    group_number INT NOT NULL DEFAULT 1,
     PRIMARY KEY(course_id, prerequisite_id),
     FOREIGN KEY (course_id) REFERENCES courses(course_id)
         ON UPDATE CASCADE

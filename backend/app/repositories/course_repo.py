@@ -1,0 +1,108 @@
+from sqlalchemy import String, cast
+from sqlalchemy.orm import Session, aliased
+from app.models import Course, Department, CourseAttribute, Attribute, CoursePrerequisite
+
+
+class CourseRepository:
+
+    @staticmethod
+    def get_course_details(db: Session, course):
+        result = (
+            db.query(
+                (Department.prefix + ' ' + Course.course_code.cast(String)).label("course"),
+                Course.name.label("name"),
+                Course.description.label("description"),
+                Course.credits.label("credits")
+            )
+              .join(Department, Department.department_id == Course.department_id)
+              .filter(
+                  Department.prefix + Course.course_code.cast(String) == course
+              )
+              .first()
+        )
+        if not result:
+            return None
+        return result._asdict()
+
+    @staticmethod
+    def get_course_attributes(db: Session, course):
+        results = (
+            db.query(Attribute.name)
+            .join(CourseAttribute, CourseAttribute.attribute_id == Attribute.attribute_id)
+            .join(Course, Course.course_id == CourseAttribute.course_id)
+            .join(Department, Department.department_id == Course.department_id)
+            .filter(
+                Department.prefix + Course.course_code.cast(String) == course
+            )
+            .all()
+        )
+        for i in range(len(results)):
+            results[i] = results[i][0]
+        return results
+
+    @staticmethod
+    def get_course_prerequisites(db: Session, course):
+        CourseMain = aliased(Course)
+        Prereq= aliased(Course)
+        results = (
+            db.query(
+                (Department.prefix + cast(Prereq.course_code, String)).label("course")
+            ).select_from(CoursePrerequisite)
+            .join(CourseMain, CourseMain.course_id == CoursePrerequisite.course_id)
+            .join(Prereq, Prereq.course_id == CoursePrerequisite.prerequisite_id)
+            .join(Department, Department.department_id == Prereq.department_id)
+            .filter(
+                Department.prefix + cast(CourseMain.course_code,String) == course
+            )
+            .all()
+        )
+        clean_results = []
+        for result in results:
+            clean_results.append(result[0])
+        return clean_results
+
+    @staticmethod
+    def get_next_courses(db: Session, course):
+        CourseMain = aliased(Course)
+        Prereq = aliased(Course)
+        results = (
+            db.query(
+                (Department.prefix + cast(Prereq.course_code, String)).label("course")
+            ).select_from(CoursePrerequisite)
+            .join(CourseMain, CourseMain.course_id == CoursePrerequisite.course_id)
+            .join(Prereq, Prereq.course_id == CoursePrerequisite.prerequisite_id)
+            .join(Department, Department.department_id == Prereq.department_id)
+            .filter(
+                Department.prefix + cast(Prereq.course_code, String) == course
+            )
+            .all()
+        )
+        clean_results = []
+        for result in results:
+            if result[0] in clean_results:
+                continue
+            clean_results.append(result[0])
+        return clean_results
+
+    @staticmethod
+    def get_course_data(db: Session, course):
+        attributes = CourseRepository.get_course_attributes(db, course)
+        info = CourseRepository.get_course_details(db, course)
+        info['attributes'] = attributes
+        info['prerequisites'] = CourseRepository.get_course_prerequisites(db, course)
+        return info
+
+    @staticmethod
+    def get_all_courses(db: Session):
+        results = (
+            db.query(
+                (Department.prefix + Course.course_code.cast(String)).label("course"),
+                Course.name.label("name"),
+            )
+            .join(Department, Department.department_id == Course.department_id)
+            .all()
+        )
+        clean_results = []
+        for result in results:
+            clean_results.append(result._asdict())
+        return clean_results

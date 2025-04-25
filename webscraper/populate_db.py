@@ -3,8 +3,8 @@ import pandas as pd
 import ast
 from get_urls import get_course_urls
 from get_df import create_df
-
-# Connect to your PostgresSQL database
+import numpy as np
+# Connect to your PostgresSQL db
 conn = psycopg2.connect(
     dbname="coursesDB",
     user="colin",
@@ -17,6 +17,7 @@ conn = psycopg2.connect(
 # Create a cursor to run queries
 cursor = conn.cursor()
 
+# Get Course ID
 def get_course_id(department_tag, course_code):
     try:
         query = """
@@ -35,6 +36,7 @@ def get_course_id(department_tag, course_code):
         conn.rollback()
         return None
 
+# Get Department ID
 def get_department_id(department_tag):
     try:
         query = """
@@ -51,6 +53,7 @@ def get_department_id(department_tag):
         conn.rollback()
         return None
 
+# Add New Department
 def add_department(department_tag, department):
     try:
         query = """
@@ -63,7 +66,7 @@ def add_department(department_tag, department):
         print(e)
         conn.rollback()
 
-
+# Add Course Attributes
 def insert_attributes(course_id, attributes):
     for attribute in attributes:
         try:
@@ -91,7 +94,7 @@ def insert_attributes(course_id, attributes):
 
     conn.commit()
 
-
+# Add Course Prerequisites
 def insert_prerequisites(df):
     for index, row in df.iterrows():
         course_id = get_course_id(row['department_tag'], row['course_code'])
@@ -100,29 +103,42 @@ def insert_prerequisites(df):
             #print(f'Cant find {row['department_tag']} - {row['course_code']}')
             continue
 
-        for preq in row['prerequisites']:
+
+        for idx, prereq in enumerate(row['prerequisites']):
+            preq = prereq
+            group = row['group_numbers'][idx]
             parts = preq.split(' ')
+
             preq_id = get_course_id(parts[0], parts[1])
-            if preq_id is None:
-                #print(f'Cant find {parts[0]} - {parts[1]}')
+
+            if not preq_id:
                 continue
+
             try:
                 query = """
-                        INSERT INTO course_prerequisites(course_id, prerequisite_id)
-                        VALUES (%s, %s)   
+                        INSERT INTO course_prerequisites(course_id, prerequisite_id, group_number)
+                        VALUES (%s, %s, %s)   
                         """
-                cursor.execute(query, (course_id, preq_id, ))
+                cursor.execute(query, (course_id, preq_id, group))
                 conn.commit()
             except Exception as e:
                 #print(f'INSERT PREREQUISITES ERROR: ', e)
+                error = e
+                print(e)
                 conn.rollback()
 
 
-def convert_str_list(df):
-    columns_to_convert = ['prerequisites', 'corequisites', 'attributes']
-    for col in columns_to_convert:
-        df[col] = df[col].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
 
+
+def convert_str_list(df):
+    columns_to_convert = ['prerequisites', 'corequisites', 'attributes', 'group_numbers']
+    for col in columns_to_convert:
+        df[col] = df[col].apply(
+            lambda x: [] if isinstance(x, float) and pd.isna(x)
+            else list(x) if isinstance(x, np.ndarray)
+            else ast.literal_eval(x) if isinstance(x, str)
+            else x
+        )
 
 def insert_courses(df):
     for index, row in df.iterrows():
@@ -130,12 +146,8 @@ def insert_courses(df):
         department_id = get_department_id(row['department_tag'])
         #print(department_id)
         if department_id is None:
-            add_department(row['department_tag'], row['department'])
-            department_id = get_department_id(row['department_tag'])
-            #print(department_id)
-        if department_id is None:
-            print(f'Failed to get/insert id for row {index}\n'+str(row))
-            add_department(row['department_tag'], row['department'])
+            continue
+        if row['credits'] == 0:
             continue
         # Attempt to insert into course tables
         try:
@@ -152,10 +164,17 @@ def insert_courses(df):
             print('inserting course failed '+str(e))
             conn.rollback()
 
+
+
+# Main Script Here:
 df = pd.read_csv('courses.csv')
+
 convert_str_list(df)
 
 insert_courses(df)
+
+prereqs = df['prerequisites'][0]
+
 
 
 insert_prerequisites(df)
