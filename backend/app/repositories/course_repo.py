@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy import String, cast
 from sqlalchemy.orm import Session, aliased
 from app.models import Course, Department, CourseAttribute, Attribute, CoursePrerequisite
@@ -42,17 +43,18 @@ class CourseRepository:
 
     @staticmethod
     def get_course_prerequisites(db: Session, course):
-        CourseMain = aliased(Course)
-        Prereq= aliased(Course)
+        P = aliased(Course)      # Prerequisite
+        PD = aliased(Department) # Prerequisite Department
         results = (
             db.query(
-                (Department.prefix + cast(Prereq.course_code, String)).label("course")
+                (PD.prefix + cast(P.course_code, String)).label("course")
             ).select_from(CoursePrerequisite)
-            .join(CourseMain, CourseMain.course_id == CoursePrerequisite.course_id)
-            .join(Prereq, Prereq.course_id == CoursePrerequisite.prerequisite_id)
-            .join(Department, Department.department_id == Prereq.department_id)
+            .join(Course, Course.course_id == CoursePrerequisite.course_id)
+            .join(Department, Department.department_id == Course.department_id)
+            .join(P, P.course_id == CoursePrerequisite.prerequisite_id)
+            .join(PD, PD.department_id == P.department_id)
             .filter(
-                Department.prefix + cast(CourseMain.course_code,String) == course
+                Department.prefix + cast(Course.course_code,String) == course
             )
             .all()
         )
@@ -63,17 +65,18 @@ class CourseRepository:
 
     @staticmethod
     def get_next_courses(db: Session, course):
-        CourseMain = aliased(Course)
-        Prereq = aliased(Course)
+        P = aliased(Course)       # Prerequisite
+        PD = aliased(Department)  # Prerequisite Department
         results = (
             db.query(
-                (Department.prefix + cast(Prereq.course_code, String)).label("course")
+                (Department.prefix + cast(Course.course_code, String)).label("course")
             ).select_from(CoursePrerequisite)
-            .join(CourseMain, CourseMain.course_id == CoursePrerequisite.course_id)
-            .join(Prereq, Prereq.course_id == CoursePrerequisite.prerequisite_id)
-            .join(Department, Department.department_id == Prereq.department_id)
+            .join(Course, Course.course_id == CoursePrerequisite.course_id)
+            .join(Department, Department.department_id == Course.department_id)
+            .join(P, P.course_id == CoursePrerequisite.prerequisite_id)
+            .join(PD, PD.department_id == P.department_id)
             .filter(
-                Department.prefix + cast(Prereq.course_code, String) == course
+                PD.prefix + cast(P.course_code, String) == course
             )
             .all()
         )
@@ -88,6 +91,10 @@ class CourseRepository:
     def get_course_data(db: Session, course):
         attributes = CourseRepository.get_course_attributes(db, course)
         info = CourseRepository.get_course_details(db, course)
+
+        if info is None:
+            raise HTTPException(status_code=404, detail="User not found")
+
         info['attributes'] = attributes
         info['prerequisites'] = CourseRepository.get_course_prerequisites(db, course)
         return info

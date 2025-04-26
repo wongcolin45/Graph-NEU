@@ -11,13 +11,12 @@ class CourseGraphService:
         queue = [course]
 
         index = 0
-
-
+        edge_number = 1
         while queue:
             data = CourseRepository.get_course_data(db, queue.pop())
 
             node = {
-                'id': data['course'],
+                'id': data['course'].replace(' ', ''),
                 'data': data,
                 'position': {0, index * 100}
             }
@@ -25,14 +24,20 @@ class CourseGraphService:
             nodes.append(node)
 
             # Add Edges
-            for destination in CourseRepository.get_next_courses(db, node['id']):
+            next_courses = CourseRepository.get_next_courses(db, node['id'].replace(' ',''))
+
+
+            for destination in next_courses:
+                if node['id'] == destination:
+                    continue
                 # add the edge
                 edge = {
-                    'id': f'edge-{index}',
+                    'id': f'edge-{edge_number}',
                     'source': node['id'],
-                    'target': course
+                    'target': destination
                 }
                 edges.append(edge)
+                edge_number += 1
                 #add the destination node to queue
                 queue.append(destination)
 

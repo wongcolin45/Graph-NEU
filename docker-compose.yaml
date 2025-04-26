@@ -1,25 +1,35 @@
-version: '3.8'
+#version: "3.8"
 
 services:
   db:
     image: postgres:15
     container_name: my_postgres_db
-    environment:
-      POSTGRES_USER: colin
-      POSTGRES_PASSWORD: barkley
-      POSTGRES_DB: coursesDB
+    env_file: .env
     ports:
       - "5432:5432"
     volumes:
-        # route to were docker store info on your local machine using pgdata
       - pgdata:/var/lib/postgresql/data
       - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
 
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: fastapi_backend
+    volumes:
+      - ./backend:/app               # live-mount
+    command: uvicorn app.root:app --host 0.0.0.0 --port 8000 --reload
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db              # override only this
+      PYTHONPATH: /app               # or just remove this line
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
-  # named volume that holds the actual PostgreSQL data
   pgdata:
-
-
-#docker-compose down -v
-#docker-compose up --build
