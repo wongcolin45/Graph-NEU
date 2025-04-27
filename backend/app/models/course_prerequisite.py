@@ -29,6 +29,7 @@ class CoursePrerequisite(Base):
         ForeignKey("courses.course_id", onupdate='CASCADE', ondelete="CASCADE"),
         primary_key=True
     )
+    group_number: Mapped[int] = mapped_column()
 
     __table_args__ = (
         PrimaryKeyConstraint("course_id", "prerequisite_id"),

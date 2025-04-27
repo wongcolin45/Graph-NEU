@@ -1,3 +1,3 @@
-from .graph_service import CourseGraphService
+from .graph_service import GraphService
 
-__all__ = ['CourseGraphService']
+__all__ = ['GraphService']

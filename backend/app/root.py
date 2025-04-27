@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from app.db.database import SessionLocal
 from app.repositories.course_repo import CourseRepository
-from app.services.graph_service import CourseGraphService
+from app.services.graph_service import GraphService
 app = FastAPI()
 db = SessionLocal()
 
@@ -15,7 +15,7 @@ async def root():
 
 @app.get('/api/graph/course/{course}')
 async def get_graph(course):
-    return CourseGraphService.get_graph(db, course)
+    return GraphService.get_graph(db, course)
 
 
 @app.get('/api/course/{course}')

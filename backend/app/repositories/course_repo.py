@@ -42,6 +42,38 @@ class CourseRepository:
         return results
 
     @staticmethod
+    def get_course_prerequisite_groups(db: Session, course):
+        P = aliased(Course)  # Prerequisite
+        PD = aliased(Department)  # Prerequisite Department
+        results = (
+            db.query(
+                (PD.prefix + cast(P.course_code, String)).label('course'),
+                CoursePrerequisite.group_number.label('group'),
+            ).select_from(CoursePrerequisite)
+            .join(Course, Course.course_id == CoursePrerequisite.course_id)
+            .join(Department, Department.department_id == Course.department_id)
+            .join(P, P.course_id == CoursePrerequisite.prerequisite_id)
+            .join(PD, PD.department_id == P.department_id)
+            .filter(
+                Department.prefix + cast(Course.course_code, String) == course
+            )
+            .order_by(CoursePrerequisite.group_number)
+            .all()
+        )
+
+        groups = []
+        current_group = 0
+        for result in results:
+            group_number = result[1]
+            course = result[0]
+            if group_number != current_group:
+                groups.append([])
+                current_group += 1
+            groups[-1].append(course)
+
+        return groups
+
+    @staticmethod
     def get_course_prerequisites(db: Session, course):
         P = aliased(Course)      # Prerequisite
         PD = aliased(Department) # Prerequisite Department
