@@ -41,3 +41,29 @@ class CourseService:
             'satisfied': False,
             'message': message
         }
+
+    @staticmethod
+    def get_select_courses(db: Session, courses):
+        courseData = {}
+        for course in courses:
+            data = CourseRepository.get_course_data(db, course)
+            courseData[course] = data
+        return courseData
+
+    @staticmethod
+    def check_select_courses(db: Session, courses, courses_taken):
+        courses_status = {}
+
+        for course in courses:
+
+            courses_status[course] = CourseService.prerequisites_met(db, course, courses_taken)
+
+            if course == 'CS2510':
+                print('====================================\n\n')
+                print('CHECKING with courses taken')
+                print(courses_taken)
+                print('Status')
+                print(courses_status[course])
+                print('====================================\n\n')
+
+        return courses_status

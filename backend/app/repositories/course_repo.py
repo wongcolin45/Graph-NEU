@@ -17,7 +17,7 @@ class CourseRepository:
             )
               .join(Department, Department.department_id == Course.department_id)
               .filter(
-                  Department.prefix + Course.course_code.cast(String) == course
+                  Department.prefix + Course.course_code.cast(String) == course,
               )
               .first()
         )
@@ -28,7 +28,7 @@ class CourseRepository:
     @staticmethod
     def get_course_attributes(db: Session, course):
         results = (
-            db.query(Attribute.name)
+            db.query(Attribute.tag)
             .join(CourseAttribute, CourseAttribute.attribute_id == Attribute.attribute_id)
             .join(Course, Course.course_id == CourseAttribute.course_id)
             .join(Department, Department.department_id == Course.department_id)
@@ -86,7 +86,7 @@ class CourseRepository:
             .join(P, P.course_id == CoursePrerequisite.prerequisite_id)
             .join(PD, PD.department_id == P.department_id)
             .filter(
-                Department.prefix + cast(Course.course_code,String) == course
+                Department.prefix + cast(Course.course_code,String) == course,
             )
             .all()
         )
@@ -125,7 +125,7 @@ class CourseRepository:
         info = CourseRepository.get_course_details(db, course)
 
         if info is None:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=404, detail=f'{course} not found')
 
         info['attributes'] = attributes
         info['prerequisites'] = CourseRepository.get_course_prerequisites(db, course)
