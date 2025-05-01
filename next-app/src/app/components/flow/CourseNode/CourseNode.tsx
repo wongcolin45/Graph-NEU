@@ -4,8 +4,8 @@ import styles from './CourseNode.module.css'
 import React, {JSX, useEffect, useState, useCallback} from 'react';
 import axios from 'axios';
 import {createPortal} from "react-dom";
-import type {CourseStatusMap, CourseStatus} from "@/app/playground/page";
-
+import type {CourseStatusMap, CourseStatus} from "@/app/explore/page";
+import useUserDataStore from "@/app/store/useUserDataStore";
 
 interface CourseData {
     label: string
@@ -14,14 +14,18 @@ interface CourseData {
     description: string,
     credits: number,
     attributes: string,
-    coursesTaken: Set<string>,
-    setCoursesTaken: React.Dispatch<React.SetStateAction<Set<string>>>,
     courseStatusMap: CourseStatusMap
 }
 
 const CourseNode = ({ data }: { data: CourseData}) => {
 
-    const {label, course, name, description, credits, attributes, coursesTaken, setCoursesTaken, courseStatusMap} = data;
+    const {label, course, name, description, credits, attributes, courseStatusMap} = data;
+
+    // import global state from Zustand
+    const coursesTaken = useUserDataStore((state) => state.coursesTaken);
+    const addCourse = useUserDataStore((state) => state.addCourse);
+    const removeCourse = useUserDataStore((state) => state.removeCourse);
+
 
     const canTake = useCallback((): boolean => {
         const id = course.replace(/\s+/g, '');
@@ -31,11 +35,7 @@ const CourseNode = ({ data }: { data: CourseData}) => {
 
     useEffect(() => {
         if (coursesTaken.has(course) && !canTake()) {
-            setCoursesTaken(prev => {
-                const newCoursesTaken = new Set(prev);
-                newCoursesTaken.delete(course);
-                return newCoursesTaken;
-            })
+            removeCourse(course);
         }
     }, [coursesTaken, canTake]);
 
@@ -43,15 +43,11 @@ const CourseNode = ({ data }: { data: CourseData}) => {
 
     const handleNodeClick = () => {
         if (canTake()) {
-            setCoursesTaken(prev => {
-                const updated = new Set(prev);
-                if (updated.has(course)) {
-                    updated.delete(course);
-                } else {
-                    updated.add(course);
-                }
-                return updated;
-            });
+            if (coursesTaken.has(course)){
+                removeCourse(course);
+            } else {
+                addCourse(course);
+            }
             return
         }
         const status: CourseStatus | undefined = courseStatusMap.get(course.replace(/\s+/g, ''));

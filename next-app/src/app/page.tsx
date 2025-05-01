@@ -12,14 +12,12 @@ import './globals.css';
 function Home() {
 
 
+    return (
+        <div>
+            <h1>About this Project</h1>
+        </div>
 
-  return (
-
-      <div>
-        <h1>NEU Roadmaps</h1>
-      </div>
-
-  )
+    )
 }
 
 export default Home;

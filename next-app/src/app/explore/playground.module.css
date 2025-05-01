@@ -1,0 +1,21 @@
+
+
+.explore {
+    background-color: #f9f9f9;
+}
+
+.sidebarButton {
+    color: black;
+    border: none;
+    border-radius: 15px;
+    margin-top: 10px;
+    margin-left: 10px;
+    width: 50px;
+    height: 50px;
+    font-size: 25px;
+}
+
+.sidebarButton:hover {
+    cursor: pointer;
+    color: #0070f3;
+}

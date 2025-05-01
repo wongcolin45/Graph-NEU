@@ -2,12 +2,16 @@
 
 import ReactFlow, {Node, Edge, MarkerType, ReactFlowProvider} from 'reactflow';
 import 'reactflow/dist/style.css';
-import {JSX, useEffect, useState} from "react";
+import React, {JSX, useEffect, useState} from "react";
 import '../globals.css';
 import axios from 'axios';
 import CourseNode from "@/app/components/flow/CourseNode/CourseNode";
 import CourseEdge from "@/app/components/flow/CourseEdge/CourseEdge";
 import styles from './playground.module.css'
+import Loader from '@/app/components/Loader/Loader';
+import useSidebarStore from "@/app/store/useSidebarStore";
+import useGraphStore from "@/app/store/useGraphStore";
+import useUserDataStore from "@/app/store/useUserDataStore";
 
 const nodeTypes = {
   graphNode: CourseNode
@@ -19,7 +23,6 @@ const edgeTypes = {
 
 const BASE_URL: string = 'http://localhost:8000';
 
-
 export type CourseStatus = {
   satisfied: boolean;
   message: string;
@@ -28,9 +31,15 @@ export type CourseStatus = {
 export type CourseStatusMap = Map<string, CourseStatus>;
 
 
-const Playground = (): JSX.Element  => {
+const Explore = (): JSX.Element  => {
 
-  const [coursesTaken, setCoursesTaken] = useState(new Set());
+  // Zustand Shared State
+  const toggleSidebar = useSidebarStore((s) => s.toggleSidebar);
+  const source: string = useGraphStore((s) => s.source);
+  const coursesTaken = useUserDataStore((s) => s.coursesTaken);
+
+
+  // const [coursesTaken, setCoursesTaken] = useState(new Set());
 
   const [courseStatusMap, setCourseStatusMap] = useState<CourseStatusMap>(new Map());
 
@@ -40,23 +49,24 @@ const Playground = (): JSX.Element  => {
   }>({ nodes: [], edges: [] });
 
   useEffect(() => {
-    const updateGraph = async () => {
+    const updateGraph: () => void = async () => {
+      if (source === '') return;
       try {
-        const course = 'CS2500';
-        const url = `${BASE_URL}/api/graph/course/${course}`;
+        const url = `${BASE_URL}/api/graph/course/${source}`;
         const response = await axios.get(url);
         setGraph(response.data);
-
       } catch (error) {
         console.error(error);
       }
     }
     updateGraph()
-    setCoursesTaken(new Set())
-  },[])
+  },[source])
 
   useEffect(() => {
     const updateCourseStatusMap = async () => {
+      if (graph.nodes === undefined) {
+        return;
+      }
       try {
         const courses = graph.nodes.map(node => node.data.course.replace(/\s+/g, ''));
         console.log('Courses taken: '+Array.from(coursesTaken));
@@ -67,8 +77,6 @@ const Playground = (): JSX.Element  => {
         });
 
         setCourseStatusMap(new Map(Object.entries(response.data)));
-        console.log('[Course Status Map Check:]')
-        console.log(courseStatusMap)
       } catch (error) {
         console.error(error);
       }
@@ -76,36 +84,30 @@ const Playground = (): JSX.Element  => {
     updateCourseStatusMap();
   }, [coursesTaken, graph]);
 
-
-  if (graph.nodes.length === 0 && graph.edges.length === 0) {
-      return (
-          <h1>Fetching Graph</h1>
-      )
-  }
-
-  const styledNodes: Node[] = graph.nodes.map((node) => ({
-    ...node,
-    type: 'graphNode',
-    draggable: true,
-    data: {
-      ...node.data,
-      coursesTaken,
-      setCoursesTaken,
-      courseStatusMap
+  const renderContents = (): JSX.Element => {
+    if (graph.nodes === undefined || graph.nodes.length === 0 && graph.edges.length === 0) {
+      return <Loader/>;
     }
-  }));
 
-  const styledEdges: Edge[] = graph.edges.map((edge) => ({
-    ...edge,
-    type: 'graphEdge',
-    data: {
-      coursesTaken,
-      courseStatusMap
-    }
-  }));
+    const styledNodes: Node[] = graph.nodes.map((node) => ({
+      ...node,
+      type: 'graphNode',
+      draggable: true,
+      data: {
+        ...node.data,
+        courseStatusMap
+      }
+    }));
 
-  return (
-      <div className={styles.playground} style={{width: '100%', height: '1000px'}}>
+    const styledEdges: Edge[] = graph.edges.map((edge) => ({
+      ...edge,
+      type: 'graphEdge',
+      data: {
+        courseStatusMap
+      }
+    }));
+
+    return (
         <ReactFlowProvider>
           <ReactFlow nodes={styledNodes}
                      edges={styledEdges}
@@ -114,8 +116,16 @@ const Playground = (): JSX.Element  => {
                      nodesDraggable={true}
           />
         </ReactFlowProvider>
+    )
+  }
+
+  return (
+      <div className={styles.explore} style={{width: '100%', height: '1000px'}}>
+        <button className={styles.sidebarButton}
+                onClick={() => toggleSidebar()}>{'☰'}</button>
+        {renderContents()}
       </div>
   )
 }
 
-export default Playground;
+export default Explore;

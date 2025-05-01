@@ -1,0 +1,57 @@
+
+.sidebar {
+    width: 40vh;
+    height: 100vh;
+    /*background-color: #fafafa;*/
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    /*box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);*/
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+}
+
+.open {
+    left: 0;
+}
+
+.closeBtn {
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: black;
+    cursor: pointer;
+}
+
+
+.content {
+    margin-top: 0px;
+    padding: 20px;
+    text-align: left;         /* 👈 ensures inline text is left-aligned */
+    align-items: flex-start;  /* 👈 for flex children */
+}
+
+.setSource {
+    display: flex;
+    flex-direction: row;
+    align-items: center;  /* optional: vertically center the input and button */
+    gap: 8px;             /* optional: space between them */
+}
+
+.setSource input {
+    border: 2px solid black;
+    border-radius: 5px;
+    height: 2vh;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* subtle shadow */
+    margin-right: 5px;
+}
+
+.setSource button {
+    border: none;
+    border-radius: 5px;
+    font-size: 2vh;
+    background-color: #fafafa;
+}

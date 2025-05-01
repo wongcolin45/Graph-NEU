@@ -2,7 +2,8 @@
 
 import {BaseEdge, EdgeLabelRenderer, getBezierPath, MarkerType} from 'reactflow';
 import {JSX} from "react";
-import {CourseStatus} from "@/app/playground/page";
+import {CourseStatus} from "@/app/explore/page";
+import useUserDataStore from "@/app/store/useUserDataStore";
 
 interface EdgeData {
     id: string;
@@ -17,7 +18,9 @@ const CourseEdge = ({id, source, target,
                                                           sourceX, sourceY,
                                                           targetX, targetY, data}: any): JSX.Element => {
 
-    const {courseStatusMap, coursesTaken} = data;
+    const {courseStatusMap} = data;
+
+    const coursesTaken = useUserDataStore((state) => state.coursesTaken);
 
     const [edgePath, labelX, labelY] = getBezierPath({
         sourceX,
@@ -48,13 +51,6 @@ const CourseEdge = ({id, source, target,
 
     }
 
-    const markerEnd = {
-        type: MarkerType.ArrowClosed,
-        height: 50,
-        width: 50,
-        color: 'black'
-
-    }
 
     return (
         <>
