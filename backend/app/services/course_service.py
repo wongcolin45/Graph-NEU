@@ -6,6 +6,19 @@ from rapidfuzz import process, fuzz
 class CourseService:
 
     @staticmethod
+    def get_course_data(db: Session, course):
+
+        attributes = CourseRepository.get_course_attributes(db, course)
+        info = CourseRepository.get_course_details(db, course)
+
+        if info is None:
+            return None
+
+        info['attributes'] = attributes
+        info['prerequisites'] = CourseRepository.get_course_prerequisites(db, course)
+        return info
+
+    @staticmethod
     def prerequisites_met(db: Session, course, courses_taken):
         prerequisites_groups = CourseRepository.get_course_prerequisite_groups(db, course)
 
@@ -46,7 +59,7 @@ class CourseService:
     def get_select_courses(db: Session, courses):
         courseData = {}
         for course in courses:
-            data = CourseRepository.get_course_data(db, course)
+            data = CourseService.get_course_data(db, course)
             courseData[course] = data
         return courseData
 
@@ -72,7 +85,6 @@ class CourseService:
                 'course': course_code,
                 'name': name,
             }
-
 
         matches = process.extract(
             query,

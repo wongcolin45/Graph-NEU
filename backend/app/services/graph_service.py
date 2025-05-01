@@ -1,8 +1,12 @@
 
 from sqlalchemy.orm import Session
 from app.repositories.course_repo import CourseRepository
+from app.services.course_service import CourseService
 import networkx as nx
 from collections import defaultdict
+
+
+
 
 class GraphService:
 
@@ -14,7 +18,7 @@ class GraphService:
 
         while queue:
 
-            data = CourseRepository.get_course_data(db, queue.pop())
+            data = CourseService.get_course_data(db, queue.pop())
             node = data['course'].replace(' ','')
 
             if node not in G:
@@ -25,7 +29,7 @@ class GraphService:
             next_courses = CourseRepository.get_next_courses(db, node)
 
             for next_node in next_courses:
-                data = CourseRepository.get_course_data(db, next_node)
+                data = CourseService.get_course_data(db, next_node)
                 if data is None:
                     continue
                 course = data['course'].replace(' ','')

@@ -4,7 +4,10 @@ from sqlalchemy.orm import Session, aliased
 from app.models import Course, Department, CourseAttribute, Attribute, CoursePrerequisite
 
 
+
+
 class CourseRepository:
+
 
     @staticmethod
     def get_course_details(db: Session, course):
@@ -118,18 +121,6 @@ class CourseRepository:
                 continue
             clean_results.append(result[0])
         return clean_results
-
-    @staticmethod
-    def get_course_data(db: Session, course):
-        attributes = CourseRepository.get_course_attributes(db, course)
-        info = CourseRepository.get_course_details(db, course)
-
-        if info is None:
-            raise HTTPException(status_code=404, detail=f'{course} not found')
-
-        info['attributes'] = attributes
-        info['prerequisites'] = CourseRepository.get_course_prerequisites(db, course)
-        return info
 
     @staticmethod
     def get_all_courses(db: Session):

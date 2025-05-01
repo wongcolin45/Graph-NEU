@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from app.db.database import SessionLocal
 from app.dependencies import get_db
-from app.repositories.course_repo import CourseRepository
 from app.services.course_service import CourseService
 from app.services.graph_service import GraphService
 
@@ -41,7 +40,7 @@ async def get_graph(course, db: Session = Depends(get_db)):
 
 @app.get('/api/course/{course}')
 async def get_course(course, db: Session = Depends(get_db)):
-    return CourseRepository.get_course_data(db, course)
+    return CourseService.get_course_data(db, course)
 
 @app.get('/api/course/select')
 async def get_select_courses(courses, db: Session = Depends(get_db)):

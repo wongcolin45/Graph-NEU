@@ -9,7 +9,7 @@ const Navbar = () => {
         <nav className={styles.navbar}>
             <div className={styles.left}>
                 <Image src={'/logo.png'} alt={'logo'} height={100} width={100} priority/>
-                <h1>NEU Graphs</h1>
+                <h1>Graph NEU</h1>
             </div>
 
             <ul>
