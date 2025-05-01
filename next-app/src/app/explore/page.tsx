@@ -7,11 +7,12 @@ import '../globals.css';
 import axios from 'axios';
 import CourseNode from "@/app/components/flow/CourseNode/CourseNode";
 import CourseEdge from "@/app/components/flow/CourseEdge/CourseEdge";
-import styles from './playground.module.css'
+import styles from './explore.module.css'
 import Loader from '@/app/components/Loader/Loader';
 import useSidebarStore from "@/app/store/useSidebarStore";
 import useGraphStore from "@/app/store/useGraphStore";
 import useUserDataStore from "@/app/store/useUserDataStore";
+import {BASE_URL} from "@/app/api";
 
 const nodeTypes = {
   graphNode: CourseNode
@@ -21,7 +22,6 @@ const edgeTypes = {
   graphEdge: CourseEdge,
 };
 
-const BASE_URL: string = 'http://localhost:8000';
 
 export type CourseStatus = {
   satisfied: boolean;

@@ -12,7 +12,9 @@ db = SessionLocal()
 
 #result = CourseRepository.get_next_courses(db, 'CS2500')
 
-result = CourseService.prerequisites_met(db, 'MATH136513',['CS2500'])
+result = CourseService.search_courses(db, 'Computer', 10)
+
+# result = CourseService.search_courses(db, 'Computer', 10)
 
 if result:
 

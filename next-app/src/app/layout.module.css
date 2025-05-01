@@ -12,12 +12,17 @@
     flex-direction: column;
     overflow: auto;
     background-color: #f8f8f8; /* for testing visibility */
+
 }
 
 .mainContent main {
     flex: 1;
-    padding: 16px; /* optional */
+    /*padding: 16px; !* optional *!*/
     overflow: auto;
+}
+
+.mainContent > :first-child {
+    flex-shrink: 0;
 }
 
 /*.layout {*/

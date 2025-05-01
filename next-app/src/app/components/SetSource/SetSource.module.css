@@ -1,0 +1,114 @@
+.setSource {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+
+.inputContainer {
+    position: relative;
+}
+
+.inputContainer input {
+    width: 145%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.inputContainer input:focus {
+    outline: none;
+    border-color: #0070f3;
+    box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+    z-index: 10;
+    list-style: none;
+    padding: 0;
+    width: 160%;
+}
+
+.dropdown li {
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown li:hover {
+    background-color: #f0f0f0;
+}
+
+.sourceSelection {
+    display: inline-block;
+    background-color: #e6f7ff;
+    color: #0050b3;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid #91d5ff;
+}
+
+.unselectedSource {
+    display: inline-block;
+    background-color: #fff5f5;
+    color: #c53030;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid #fbb6b6;
+}
+
+.sourceRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+}
+
+
+
+.buttonGroup {
+    display: flex;
+    gap: 4px;
+}
+
+.editButton,
+.clearButton {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.editButton:hover,
+.clearButton:hover {
+    background-color: #f2f2f2;
+    border-color: #ccc;
+}

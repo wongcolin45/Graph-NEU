@@ -1,6 +1,6 @@
 
 .sidebar {
-    width: 40vh;
+    width: 45vh;
     height: 100vh;
     /*background-color: #fafafa;*/
     background: #fff;
@@ -34,24 +34,10 @@
     align-items: flex-start;  /* 👈 for flex children */
 }
 
-.setSource {
-    display: flex;
-    flex-direction: row;
-    align-items: center;  /* optional: vertically center the input and button */
-    gap: 8px;             /* optional: space between them */
+.content h1 {
+    font-size: 36px;
+    margin-bottom: 0px;
 }
 
-.setSource input {
-    border: 2px solid black;
-    border-radius: 5px;
-    height: 2vh;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* subtle shadow */
-    margin-right: 5px;
-}
 
-.setSource button {
-    border: none;
-    border-radius: 5px;
-    font-size: 2vh;
-    background-color: #fafafa;
-}
+

@@ -145,3 +145,14 @@ class CourseRepository:
         for result in results:
             clean_results.append(result._asdict())
         return clean_results
+
+    @staticmethod
+    def get_courses_like(db: Session, course):
+        query = f"%{course.upper()}%"
+        results = (db.query(
+                    (Department.prefix + cast(Course.course_code, String)).label("course"),
+                     Course.name.label('name')
+                    ).select_from(Course)
+                   .join(Department, Department.department_id == Course.department_id)
+                   .all())
+        return results

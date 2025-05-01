@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.repositories import CourseRepository
-
+from rapidfuzz import process, fuzz
 
 class CourseService:
 
@@ -59,3 +59,31 @@ class CourseService:
             courses_status[course] = CourseService.prerequisites_met(db, course, courses_taken)
 
         return courses_status
+
+    @staticmethod
+    def search_courses(db: Session, query: str, limit: int):
+        results = CourseRepository.get_courses_like(db, query)
+
+        items = {}
+        for result in results:
+            course_code = result[0]
+            name = result[1]
+            items[f'{course_code} {name}'] = {
+                'course': course_code,
+                'name': name,
+            }
+
+
+        matches = process.extract(
+            query,
+            items.keys(),
+            scorer=fuzz.WRatio,
+            limit=limit
+        )
+
+        clean = []
+        for match in matches:
+            matched_key = match[0]
+            clean.append(items[matched_key])
+
+        return clean

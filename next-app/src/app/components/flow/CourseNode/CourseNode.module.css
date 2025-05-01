@@ -10,11 +10,12 @@
     width: 250px;
     height: 40px;            /* 🔥 fixed height */
     position: relative;
-    overflow: visible;
+    /*overflow: visible;*/
     display: flex;           /* 🔥 layout fix */
     flex-direction: row;
     text-align: left;
     text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .node:hover {
@@ -26,6 +27,14 @@
     text-align: left;
     text-overflow: ellipsis;
 }
+
+.node span {
+    flex: 1;
+    overflow-wrap: break-word; /* ✅ allows breaking long words if needed */
+    word-break: break-word;
+    white-space: normal; /* ✅ allow wrapping */
+}
+
 
 .node button {
     background: none;
@@ -56,7 +65,7 @@
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-    z-index: 10; /* 🔥 make sure it's on top */
+    z-index: 99999999999999999999999999; /* 🔥 make sure it's on top */
 }
 
 .courseInfoButton {
