@@ -63,3 +63,8 @@ def check_courses(req: CourseCheckRequest = Body(...)):
 
 
     return result
+
+
+@app.get('/api/majors')
+def get_majors():
+    return ['Computer Science', 'Data Science']
