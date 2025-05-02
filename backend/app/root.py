@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import SessionLocal
 from app.dependencies import get_db
+from app.repositories.department_repo import DepartmentRepository
 from app.services.course_service import CourseService
 from app.services.graph_service import GraphService
 
@@ -81,3 +82,7 @@ def search_courses(course: str, limit: int, db: Session = Depends(get_db)):
 
     return results
 
+
+@app.get('/api/departments/all')
+def get_all_departments(db: Session = Depends(get_db)):
+    return DepartmentRepository.get_departments(db)

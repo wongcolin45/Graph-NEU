@@ -6,7 +6,7 @@ from app.CourseFilter import CourseFilter
 from app.models import Course, Department, CourseAttribute, Attribute, CoursePrerequisite
 
 
-default_filter = CourseFilter(0, 9000, None)
+default_filter = CourseFilter(0, 5000, [])
 
 class CourseRepository:
 
@@ -93,15 +93,15 @@ class CourseRepository:
     def get_course_prerequisites(db: Session, course, course_filter: CourseFilter = default_filter):
         P = aliased(Course)      # Prerequisite
         PD = aliased(Department) # Prerequisite Department
-        
+
         filters = [
             (Department.prefix + cast(Course.course_code,String)) == course,
             (cast(P.course_code, Integer)) >= course_filter.min_course_code,
             (cast(P.course_code, Integer)) <= course_filter.max_course_code
         ]
 
-        if course_filter:
-            filters.append(PD.prefix == course_filter.department)
+        if course_filter.has_departments():
+            filters.append(PD.prefix.in_(course_filter.get_departments()))
 
         results = (
             db.query(
@@ -126,6 +126,16 @@ class CourseRepository:
     def get_next_courses(db: Session, course, course_filter: CourseFilter = default_filter):
         P = aliased(Course)       # Prerequisite
         PD = aliased(Department)  # Prerequisite Department
+
+        filters = [
+            (PD.prefix + cast(P.course_code, String)) == course,
+            (cast(P.course_code, Integer)) >= course_filter.min_course_code,
+            (cast(P.course_code, Integer)) <= course_filter.max_course_code
+        ]
+
+        if course_filter.has_departments():
+            filters.append(PD.prefix.in_(course_filter.get_departments()))
+
         results = (
             db.query(
                 (Department.prefix + cast(Course.course_code, String)).label("course")
@@ -134,9 +144,7 @@ class CourseRepository:
             .join(Department, Department.department_id == Course.department_id)
             .join(P, P.course_id == CoursePrerequisite.prerequisite_id)
             .join(PD, PD.department_id == P.department_id)
-            .filter(
-                PD.prefix + cast(P.course_code, String) == course
-            )
+            .filter(*filters)
             .all()
         )
         clean_results = []

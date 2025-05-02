@@ -7,5 +7,12 @@ from app.models import Course, Department, CourseAttribute, Attribute, CoursePre
 class DepartmentRepository:
 
     @staticmethod
-    def get_departments(db: Session) -> Department:
-        return {}
+    def get_departments(db: Session):
+        results = (
+            db.query(
+                Department.prefix.label('prefix'),
+                Department.name.label('name'),
+            ).select_from(Department)
+            .all()
+        )
+        return [row._asdict() for row in results]

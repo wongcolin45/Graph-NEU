@@ -14,7 +14,6 @@ interface CourseResult {
 
 const SetSource = (): JSX.Element => {
 
-    const source: string = useGraphStore((s => s.source));
     const setSource: (newSource: string) => void = useGraphStore(s => s.setSource);
 
     const [input, setInput] = useState<string>('');
@@ -71,6 +70,7 @@ const SetSource = (): JSX.Element => {
     const handleResetClick = (): void => {
         setInput('');
         setSource('');
+        setSourceSelection(undefined);
     }
 
 
@@ -130,7 +130,7 @@ const SetSource = (): JSX.Element => {
                 {renderSource()}
                 <div className={styles.buttonGroup}>
                     <button className={styles.editButton} onClick={handleEditClick}>{'✏️'}</button>
-                    <button className={styles.clearButton} onClick={handleResetClick}>{'❌'}</button>
+                    <button className={styles.clearButton} onClick={handleResetClick}>{'🗑️'}</button>
                 </div>
             </div>
         </div>
