@@ -1,14 +1,18 @@
 from fastapi import HTTPException
-from sqlalchemy import String, cast
+from sqlalchemy import String, cast, Integer
 from sqlalchemy.orm import Session, aliased
+
+from app.CourseFilter import CourseFilter
 from app.models import Course, Department, CourseAttribute, Attribute, CoursePrerequisite
 
 
-
+default_filter = CourseFilter(0, 9000, None)
 
 class CourseRepository:
 
-
+    # ==============================================================
+    # GET THE COURSE NAME AND DESCRIPTION
+    # ==============================================================
     @staticmethod
     def get_course_details(db: Session, course):
         result = (
@@ -28,6 +32,9 @@ class CourseRepository:
             return None
         return result._asdict()
 
+    # ==============================================================
+    # GET LIST OF NU PATH ATTRIBUTES
+    # ==============================================================
     @staticmethod
     def get_course_attributes(db: Session, course):
         results = (
@@ -44,6 +51,9 @@ class CourseRepository:
             results[i] = results[i][0]
         return results
 
+    # ==============================================================
+    # GET PREREQUISITES GROUPS
+    # ==============================================================
     @staticmethod
     def get_course_prerequisite_groups(db: Session, course):
         P = aliased(Course)  # Prerequisite
@@ -76,10 +86,23 @@ class CourseRepository:
 
         return groups
 
+    # ==============================================================
+    # GET PREREQUISITES AS LIST OF COURSE CODES
+    # ==============================================================
     @staticmethod
-    def get_course_prerequisites(db: Session, course):
+    def get_course_prerequisites(db: Session, course, course_filter: CourseFilter = default_filter):
         P = aliased(Course)      # Prerequisite
         PD = aliased(Department) # Prerequisite Department
+        
+        filters = [
+            (Department.prefix + cast(Course.course_code,String)) == course,
+            (cast(P.course_code, Integer)) >= course_filter.min_course_code,
+            (cast(P.course_code, Integer)) <= course_filter.max_course_code
+        ]
+
+        if course_filter:
+            filters.append(PD.prefix == course_filter.department)
+
         results = (
             db.query(
                 (PD.prefix + cast(P.course_code, String)).label("course")
@@ -88,9 +111,7 @@ class CourseRepository:
             .join(Department, Department.department_id == Course.department_id)
             .join(P, P.course_id == CoursePrerequisite.prerequisite_id)
             .join(PD, PD.department_id == P.department_id)
-            .filter(
-                Department.prefix + cast(Course.course_code,String) == course,
-            )
+            .filter(*filters)
             .all()
         )
         clean_results = []
@@ -98,8 +119,11 @@ class CourseRepository:
             clean_results.append(result[0])
         return clean_results
 
+    # ==============================================================
+    # GET NEXT COURSES AS LIST OF COURSE CODES
+    # ==============================================================
     @staticmethod
-    def get_next_courses(db: Session, course):
+    def get_next_courses(db: Session, course, course_filter: CourseFilter = default_filter):
         P = aliased(Course)       # Prerequisite
         PD = aliased(Department)  # Prerequisite Department
         results = (
@@ -122,6 +146,9 @@ class CourseRepository:
             clean_results.append(result[0])
         return clean_results
 
+    # ==============================================================
+    # GET ALL COURSES
+    # ==============================================================
     @staticmethod
     def get_all_courses(db: Session):
         results = (
@@ -137,6 +164,9 @@ class CourseRepository:
             clean_results.append(result._asdict())
         return clean_results
 
+    # ==============================================================
+    # GET COURSES SIMILAR TO COURSE
+    # ==============================================================
     @staticmethod
     def get_courses_like(db: Session, course):
         query = f"%{course.upper()}%"

@@ -1,6 +1,7 @@
+
 from typing import List
 
-from fastapi import FastAPI, Body, Depends
+from fastapi import FastAPI, Body, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import SessionLocal
@@ -32,20 +33,22 @@ async def root():
     return {"message": "Hello World"}
 
 @app.get('/api/graph/course/{course}')
-async def get_graph(course, db: Session = Depends(get_db)):
+async def get_graph(course,
+                    min: int = Query(None),
+                    max: int = Query(None),
+                    department: str = Query(None),
+                    db: Session = Depends(get_db)):
     try:
         return GraphService.get_graph(db, course)
     except Exception as e:
         return {"error": str(e), "message": "Something went wrong"}
 
+# ==============================================================
+# GET Graph Endpoint
+# ==============================================================
 @app.get('/api/course/{course}')
-async def get_course(course, db: Session = Depends(get_db)):
+async def get_course(course: str, db: Session = Depends(get_db)):
     return CourseService.get_course_data(db, course)
-
-@app.get('/api/course/select')
-async def get_select_courses(courses, db: Session = Depends(get_db)):
-    #return CourseService.get_select_courses(db: Session, courses)
-    return {'endpoint not implemented'}
 
 
 class CourseCheckRequest(BaseModel):
