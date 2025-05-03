@@ -6,7 +6,7 @@ from app.CourseFilter import CourseFilter
 from app.models import Course, Department, CourseAttribute, Attribute, CoursePrerequisite
 
 
-default_filter = CourseFilter(0, 5000, [])
+default_filter = CourseFilter(0, 8000, [])
 
 class CourseRepository:
 
@@ -14,7 +14,17 @@ class CourseRepository:
     # GET THE COURSE NAME AND DESCRIPTION
     # ==============================================================
     @staticmethod
-    def get_course_details(db: Session, course):
+    def get_course_details(db: Session, course, course_filter: CourseFilter = default_filter):
+
+        filters = [
+            (Department.prefix + cast(Course.course_code, String)) == course,
+            (cast(Course.course_code, Integer)) >= course_filter.min_course_code,
+            (cast(Course.course_code, Integer)) <= course_filter.max_course_code
+        ]
+
+        if course_filter.has_departments():
+            filters.append(Department.prefix.in_(course_filter.get_departments()))
+
         result = (
             db.query(
                 (Department.prefix + ' ' + Course.course_code.cast(String)).label("course"),
@@ -23,9 +33,7 @@ class CourseRepository:
                 Course.credits.label("credits")
             )
               .join(Department, Department.department_id == Course.department_id)
-              .filter(
-                  Department.prefix + Course.course_code.cast(String) == course,
-              )
+              .filter(*filters)
               .first()
         )
         if not result:

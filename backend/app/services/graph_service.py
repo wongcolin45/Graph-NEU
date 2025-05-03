@@ -1,5 +1,7 @@
 
 from sqlalchemy.orm import Session
+
+from app.CourseFilter import CourseFilter
 from app.repositories.course_repo import CourseRepository
 from app.services.course_service import CourseService
 import networkx as nx
@@ -11,25 +13,33 @@ from collections import defaultdict
 class GraphService:
 
     @staticmethod
-    def create_graph(db: Session, root_course):
+    def create_graph(db: Session, root_course, input_filter: CourseFilter):
 
         G = nx.DiGraph()
         queue = [root_course]
+        first = True
 
         while queue:
 
-            data = CourseService.get_course_data(db, queue.pop())
-            node = data['course'].replace(' ','')
+            if first:
+                data = CourseService.get_course_data(db, queue.pop())
+            else:
+                data = CourseService.get_course_data(db, queue.pop(), course_filter=input_filter)
+
+            if data is None:
+                continue
+
+            node = data['course'].replace(' ', '')
 
             if node not in G:
 
                 G.add_node(node, data=data)
 
             # Add Edges
-            next_courses = CourseRepository.get_next_courses(db, node)
+            next_courses = CourseRepository.get_next_courses(db, node, course_filter=input_filter)
 
             for next_node in next_courses:
-                data = CourseService.get_course_data(db, next_node)
+                data = CourseService.get_course_data(db, next_node, course_filter=input_filter)
                 if data is None:
                     continue
                 course = data['course'].replace(' ','')
@@ -70,8 +80,8 @@ class GraphService:
 
 
     @staticmethod
-    def get_graph(db: Session, course):
-        G = GraphService.create_graph(db, course)
+    def get_graph(db: Session, course, input_filter: CourseFilter):
+        G = GraphService.create_graph(db, course, input_filter)
         layers = GraphService.get_layers(G)
 
         layer_to_nodes = defaultdict(list)

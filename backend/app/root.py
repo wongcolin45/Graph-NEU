@@ -4,6 +4,7 @@ from typing import List
 from fastapi import FastAPI, Body, Depends, Query
 from sqlalchemy.orm import Session
 
+from app.CourseFilter import CourseFilter
 from app.db.database import SessionLocal
 from app.dependencies import get_db
 from app.repositories.department_repo import DepartmentRepository
@@ -33,14 +34,28 @@ app.add_middleware(
 async def root():
     return {"message": "Hello World"}
 
-@app.get('/api/graph/course/{course}')
-async def get_graph(course,
-                    min: int = Query(None),
-                    max: int = Query(None),
-                    department: str = Query(None),
-                    db: Session = Depends(get_db)):
+
+class CourseFilterRequest(BaseModel):
+    departments: List[str]
+    minCourseID: int
+    maxCourseID: int
+
+@app.post('/api/graph/course/{course}')
+async def get_graph(course, req: CourseFilterRequest = Body(...), db: Session = Depends(get_db)):
+    departments = req.departments
+    min = req.minCourseID
+    max = req.maxCourseID
+
+    print("\n\n\nCHECKINGG GRAPH REQUEST ")
+    print(departments)
+    print(min)
+    print(max)
+    print('=====================\n\n\n')
+
+    filter = CourseFilter(min, max, departments)
+
     try:
-        return GraphService.get_graph(db, course)
+        return GraphService.get_graph(db, course, filter)
     except Exception as e:
         return {"error": str(e), "message": "Something went wrong"}
 
@@ -68,7 +83,6 @@ def check_courses(req: CourseCheckRequest = Body(...), db: Session = Depends(get
 
 
     return result
-
 
 
 

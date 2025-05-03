@@ -21,10 +21,8 @@ class CourseFilter:
     def get_departments(self):
         return self.departments
 
+    def print(self):
+        print(f'Filter ( Departments {self.departments}), min = {self.min_course_code}, max = {self.max_course_code}')
 
 
 
-    def check(self, course_code, department):
-        code_valid = self.min_course_code <= course_code <= self.max_course_code
-        department_valid = self.department is None or department == self.department
-        return code_valid and department_valid

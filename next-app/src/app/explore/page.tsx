@@ -13,6 +13,7 @@ import useSidebarStore from "@/app/store/useSidebarStore";
 import useGraphStore from "@/app/store/useGraphStore";
 import useUserDataStore from "@/app/store/useUserDataStore";
 import {BASE_URL} from "@/app/api";
+import useCourseFilterStore from "@/app/store/useCourseFilterStore";
 
 const nodeTypes = {
   graphNode: CourseNode
@@ -37,9 +38,11 @@ const Explore = (): JSX.Element  => {
   const toggleSidebar = useSidebarStore((s) => s.toggleSidebar);
   const source: string = useGraphStore((s) => s.source);
   const coursesTaken = useUserDataStore((s) => s.coursesTaken);
+  // Filters
+  const departments: Set<string> = useCourseFilterStore((s) => s.departments);
+  const minCourseID: number = useCourseFilterStore((s) => s.minCourseID);
+  const maxCourseID: number = useCourseFilterStore((s) => s.maxCourseID);
 
-
-  // const [coursesTaken, setCoursesTaken] = useState(new Set());
 
   const [courseStatusMap, setCourseStatusMap] = useState<CourseStatusMap>(new Map());
 
@@ -49,18 +52,24 @@ const Explore = (): JSX.Element  => {
   }>({ nodes: [], edges: [] });
 
   useEffect(() => {
-    const updateGraph: () => void = async () => {
+    const updateGraph = async () => {
       if (source === '') return;
       try {
         const url = `${BASE_URL}/api/graph/course/${source}`;
-        const response = await axios.get(url);
+        console.log('min: '+minCourseID);
+        console.log('max = '+maxCourseID);
+        const response = await axios.post(url, {
+          departments: Array.from(departments),
+          minCourseID: minCourseID,
+          maxCourseID: maxCourseID
+        });
         setGraph(response.data);
       } catch (error) {
         console.error(error);
       }
     }
     updateGraph()
-  },[source])
+  },[source, departments, minCourseID, maxCourseID])
 
   useEffect(() => {
     const updateCourseStatusMap = async () => {
@@ -75,12 +84,12 @@ const Explore = (): JSX.Element  => {
           coursesTaken: Array.from(coursesTaken),
           courses: courses
         });
-
         setCourseStatusMap(new Map(Object.entries(response.data)));
       } catch (error) {
         console.error(error);
       }
     }
+
     updateCourseStatusMap();
   }, [coursesTaken, graph]);
 

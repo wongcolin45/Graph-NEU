@@ -13,7 +13,7 @@
 }
 
 .inputContainer input {
-    width: 145%;
+    width: 20vh;
     padding: 10px 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -40,7 +40,7 @@
     z-index: 10;
     list-style: none;
     padding: 0;
-    width: 30vh;
+    width: 28vh;
 }
 
 .dropdown li {
@@ -48,7 +48,7 @@
     font-size: 14px;
     cursor: pointer;
     transition: background 0.2s;
-    width: 27vh;
+    width: 25vh;
 }
 
 .dropdown li:hover {

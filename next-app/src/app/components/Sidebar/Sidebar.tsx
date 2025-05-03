@@ -4,7 +4,8 @@ import React, {JSX, useState} from "react";
 import useSidebarStore from "@/app/store/useSidebarStore";
 
 import SetSource from "@/app/components/SetSource/SetSource";
-import SetFilter from "@/app/components/Filter/SetFilter";
+import SetDepartment from "@/app/components/Filter/SetDepartment";
+import SetCourseRange from "@/app/components/SetCourseRange/SetCourseRange";
 
 
 
@@ -29,7 +30,8 @@ const Sidebar = (): JSX.Element => {
                 <h1>Customize Graph</h1>
                 <p>Modify your graph here.</p>
                 <SetSource/>
-                <SetFilter/>
+                <SetDepartment/>
+                <SetCourseRange/>
             </div>
         </div>
     );

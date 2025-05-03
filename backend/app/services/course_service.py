@@ -1,15 +1,22 @@
 from sqlalchemy.orm import Session
-
+from app.CourseFilter import CourseFilter
 from app.repositories import CourseRepository
 from rapidfuzz import process, fuzz
+
+default_filter = CourseFilter(0, 8000, [])
+
 
 class CourseService:
 
     @staticmethod
-    def get_course_data(db: Session, course):
+    def get_course_data(db: Session, course, course_filter: CourseFilter = default_filter):
+
+        info = CourseRepository.get_course_details(db, course, course_filter)
+
+        if info is None:
+            return None
 
         attributes = CourseRepository.get_course_attributes(db, course)
-        info = CourseRepository.get_course_details(db, course)
 
         if info is None:
             return None
