@@ -2,7 +2,8 @@
 
 An interactive web application that helps Northeastern students visualize their course roadmap to graduation. Users can explore course prerequisites, track progress, and see branching paths for potential majors or minors.
 
-Quick Demo: https://vimeo.com/1080958317/e6abd97295?share=copy 
+Quick Demo:  https://vimeo.com/1081138126/8ad5a90442?share=copy 
+
 
 ## Features
 
@@ -14,7 +15,7 @@ Quick Demo: https://vimeo.com/1080958317/e6abd97295?share=copy
 
 ## Tech Stack
 
-| Frontend        | Backend         | Database                      |
+| Frontend        | Backend          | Database                      |
 |-----------------|------------------|-------------------------------|
 | Next.js + React | FastAPI (Python) | PostgreSQL (course info)      |
 | React Flow      | Pydantic         | MongoDB (student roadmap)     |
