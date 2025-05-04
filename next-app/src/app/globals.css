@@ -4,6 +4,10 @@
  
 }
 
+:root {
+  --nav-h: 64px;   /* adjust if your navbar is taller / shorter */
+}
+
 
 html, body {
   margin: 0;
@@ -32,3 +36,4 @@ html, body {
 .home span {
   margin-bottom: 15px;
 }
+

@@ -1,7 +1,7 @@
 import {JSX, useState, useEffect} from "react";
 import {BASE_URL} from "@/app/api";
 import axios from "axios";
-import Select from "react-select";
+import Select from '../ClientSelect';
 import makeAnimated from "react-select/animated";
 import styles from './SetNUPath.module.css'
 import useCourseFilterStore from "@/app/store/useCourseFilterStore";

@@ -2,14 +2,17 @@
 
 .exploreContainer {
     display: flex;
-    height: 100vh;
-    position: absolute;
+    height: 100%;
+    position: fixed;
+    inset: 0;
 }
 
 .explore {
     flex: 1;                /* grow to fill the row                 */
     position: relative;     /* keeps the ★ button anchored inside   */
     background-color: #f9f9f9;
+
+    height: 100%;
 }
 
 .sidebarButton {
@@ -21,11 +24,34 @@
     width: 50px;
     height: 50px;
     font-size: 25px;
-    position: absolute;  /* prevents this from pushing down react flow stuff type  */
-    z-index: 10001;
+    /*position: absolute;*/
+    position: fixed;
+    z-index: 999999;
+    top: calc(var(--nav-h) + 16px);
 }
 
 .sidebarButton:hover {
     cursor: pointer;
     color: #0070f3;
 }
+
+
+.emptyState {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);  /* ← true centering */
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    color: #6b7280;
+    gap: 0.75rem;
+    padding: 1rem;
+    max-width: 90vw;      /* prevent text from spilling on small screens */
+}
+
+.icon { width: 56px; height: 56px; fill: currentColor; opacity: 0.8; }
+.helpText { max-width: 28ch; line-height: 1.5; }

@@ -34,6 +34,9 @@ export type CourseStatus = {
 export type CourseStatusMap = Map<string, CourseStatus>;
 
 
+
+
+
 const Explore = (): JSX.Element  => {
 
   // Zustand Shared State
@@ -47,7 +50,7 @@ const Explore = (): JSX.Element  => {
 
 
   const [courseStatusMap, setCourseStatusMap] = useState<CourseStatusMap>(new Map());
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const [graph, setGraph] = useState<{
     nodes: Node[];
@@ -77,7 +80,7 @@ const Explore = (): JSX.Element  => {
 
   useEffect(() => {
     const updateCourseStatusMap = async () => {
-      if (graph.nodes === undefined) {
+      if (graph.nodes === undefined || graph.nodes.length === 0) {
         return;
       }
       try {
@@ -97,50 +100,73 @@ const Explore = (): JSX.Element  => {
     updateCourseStatusMap();
   }, [coursesTaken, graph]);
 
+
   const renderContents = (): JSX.Element => {
-    if (graph.nodes === undefined || graph.nodes.length === 0 && graph.edges.length === 0) {
-      return <Loader/>;
-    }
+      if (source === '') {
+          return (
+              <div className={styles.emptyState}>
+                  <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      className={styles.icon}
+                  >
+                    <path
+                        d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18.4A8.4 8.4 0 1 1 20.4 12 8.41 8.41 0 0 1 12 20.4zm2.8-12.3-2.5 7.1-7.1 2.5 2.5-7.1 7.1-2.5z"></path>
+                  </svg>
 
-    const styledNodes: Node[] = graph.nodes.map((node) => ({
-      ...node,
-      type: 'graphNode',
-      draggable: true,
-      data: {
-        ...node.data,
-        courseStatusMap
+                  <h2>Select a course to begin</h2>
+                  <p className={styles.helpText}>
+                      Use the sidebar search to choose a root&nbsp;course.<br/>
+                      The prerequisite graph will appear here.
+                  </p>
+              </div>
+        )
       }
-    }));
 
-    const styledEdges: Edge[] = graph.edges.map((edge) => ({
-      ...edge,
-      type: 'graphEdge',
-      data: {
-        courseStatusMap
+      if (graph.nodes === undefined || graph.nodes.length === 0 && graph.edges.length === 0) {
+        return <Loader/>;
       }
-    }));
 
-    return (
-        <ReactFlowProvider>
-          <ReactFlow nodes={styledNodes}
-                     edges={styledEdges}
-                     nodeTypes={nodeTypes}
-                     edgeTypes={edgeTypes}
-                     nodesDraggable={true}
-          />
-        </ReactFlowProvider>
-    )
+      const styledNodes: Node[] = graph.nodes.map((node) => ({
+        ...node,
+        type: 'graphNode',
+        draggable: true,
+        data: {
+          ...node.data,
+          courseStatusMap
+        }
+      }));
+
+      const styledEdges: Edge[] = graph.edges.map((edge) => ({
+        ...edge,
+        type: 'graphEdge',
+        data: {
+          courseStatusMap
+        }
+      }));
+
+      return (
+          <ReactFlowProvider>
+            <ReactFlow nodes={styledNodes}
+                       edges={styledEdges}
+                       nodeTypes={nodeTypes}
+                       edgeTypes={edgeTypes}
+                       nodesDraggable={true}
+                       style={{ width: '100%', height: '100%' }}
+            />
+          </ReactFlowProvider>
+      )
   }
 
   return (
       <div className={styles.exploreContainer}>
 
         {sidebarOpen && <Sidebar/>}
-        <div className={styles.explore} style={{width: '100%', height: '1000px'}}>
+        <div className={styles.explore}>
           <button className={styles.sidebarButton}
                   onClick={() => setSidebarOpen(prev => !prev)}>{'☰'}</button>
           {renderContents()}
-      </div>
+        </div>
       </div>
   )
 }

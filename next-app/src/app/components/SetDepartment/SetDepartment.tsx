@@ -3,7 +3,7 @@ import {JSX, useEffect, useState} from "react";
 import styles from './SetDepartment.module.css';
 import {BASE_URL} from "@/app/api";
 import axios from "axios";
-import Select from 'react-select'
+import Select from '../ClientSelect';
 import makeAnimated from 'react-select/animated';
 import useCourseFilterStore from "@/app/store/useCourseFilterStore";
 
