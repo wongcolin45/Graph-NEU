@@ -1,19 +1,21 @@
 'use client';
 
-import ReactFlow, {Node, Edge, MarkerType, ReactFlowProvider} from 'reactflow';
+import ReactFlow, {Node, Edge, ReactFlowProvider} from 'reactflow';
 import 'reactflow/dist/style.css';
 import React, {JSX, useEffect, useState} from "react";
 import '../globals.css';
 import axios from 'axios';
 import CourseNode from "@/app/components/flow/CourseNode/CourseNode";
 import CourseEdge from "@/app/components/flow/CourseEdge/CourseEdge";
-import styles from './explore.module.css'
+import Sidebar from "@/app/components/Sidebar/Sidebar";
 import Loader from '@/app/components/Loader/Loader';
-import useSidebarStore from "@/app/store/useSidebarStore";
 import useGraphStore from "@/app/store/useGraphStore";
 import useUserDataStore from "@/app/store/useUserDataStore";
 import {BASE_URL} from "@/app/api";
 import useCourseFilterStore from "@/app/store/useCourseFilterStore";
+import styles from './explore.module.css'
+
+
 
 const nodeTypes = {
   graphNode: CourseNode
@@ -35,7 +37,6 @@ export type CourseStatusMap = Map<string, CourseStatus>;
 const Explore = (): JSX.Element  => {
 
   // Zustand Shared State
-  const toggleSidebar = useSidebarStore((s) => s.toggleSidebar);
   const source: string = useGraphStore((s) => s.source);
   const coursesTaken = useUserDataStore((s) => s.coursesTaken);
   // Filters
@@ -46,6 +47,7 @@ const Explore = (): JSX.Element  => {
 
 
   const [courseStatusMap, setCourseStatusMap] = useState<CourseStatusMap>(new Map());
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [graph, setGraph] = useState<{
     nodes: Node[];
@@ -131,10 +133,14 @@ const Explore = (): JSX.Element  => {
   }
 
   return (
-      <div className={styles.explore} style={{width: '100%', height: '1000px'}}>
-        <button className={styles.sidebarButton}
-                onClick={() => toggleSidebar()}>{'☰'}</button>
-        {renderContents()}
+      <div className={styles.exploreContainer}>
+
+        {sidebarOpen && <Sidebar/>}
+        <div className={styles.explore} style={{width: '100%', height: '1000px'}}>
+          <button className={styles.sidebarButton}
+                  onClick={() => setSidebarOpen(prev => !prev)}>{'☰'}</button>
+          {renderContents()}
+      </div>
       </div>
   )
 }

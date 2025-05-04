@@ -1,5 +1,4 @@
 import Navbar from "@/app/components/NavBar/NavBar";
-import Sidebar from "@/app/components/Sidebar/Sidebar";
 import styles from './layout.module.css';
 
 
@@ -8,7 +7,6 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         <html lang="en">
         <body>
         <div className={styles.layout}>
-            <Sidebar/>
             <div className={styles.mainContent}>
                 <Navbar/>
                 <main>{children}</main>

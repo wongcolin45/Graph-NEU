@@ -1,10 +1,15 @@
 
 
-.explore {
-    background-color: #f9f9f9;
+.exploreContainer {
+    display: flex;
+    height: 100vh;
+    position: absolute;
+}
 
-    height: 100%;
-    width: 100%;
+.explore {
+    flex: 1;                /* grow to fill the row                 */
+    position: relative;     /* keeps the ★ button anchored inside   */
+    background-color: #f9f9f9;
 }
 
 .sidebarButton {
