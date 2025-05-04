@@ -44,7 +44,7 @@ class CourseRepository:
     # GET LIST OF NU PATH ATTRIBUTES
     # ==============================================================
     @staticmethod
-    def get_course_attributes(db: Session, course):
+    def get_course_attributes(db: Session, course, course_filter: CourseFilter = default_filter):
         results = (
             db.query(Attribute.tag)
             .join(CourseAttribute, CourseAttribute.attribute_id == Attribute.attribute_id)
@@ -57,6 +57,10 @@ class CourseRepository:
         )
         for i in range(len(results)):
             results[i] = results[i][0]
+
+        if not course_filter.check_attributes(results):
+            return None
+
         return results
 
     # ==============================================================

@@ -42,6 +42,7 @@ const Explore = (): JSX.Element  => {
   const departments: Set<string> = useCourseFilterStore((s) => s.departments);
   const minCourseID: number = useCourseFilterStore((s) => s.minCourseID);
   const maxCourseID: number = useCourseFilterStore((s) => s.maxCourseID);
+  const attributes: string[] = useCourseFilterStore((s) => s.attributes);
 
 
   const [courseStatusMap, setCourseStatusMap] = useState<CourseStatusMap>(new Map());
@@ -61,7 +62,8 @@ const Explore = (): JSX.Element  => {
         const response = await axios.post(url, {
           departments: Array.from(departments),
           minCourseID: minCourseID,
-          maxCourseID: maxCourseID
+          maxCourseID: maxCourseID,
+          attributes: attributes
         });
         setGraph(response.data);
       } catch (error) {
@@ -69,7 +71,7 @@ const Explore = (): JSX.Element  => {
       }
     }
     updateGraph()
-  },[source, departments, minCourseID, maxCourseID])
+  },[source, departments, minCourseID, maxCourseID, attributes])
 
   useEffect(() => {
     const updateCourseStatusMap = async () => {

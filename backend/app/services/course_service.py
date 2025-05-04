@@ -13,13 +13,11 @@ class CourseService:
 
         info = CourseRepository.get_course_details(db, course, course_filter)
 
-        if info is None:
+        attributes = CourseRepository.get_course_attributes(db, course, course_filter)
+
+        if info is None or attributes is None:
             return None
 
-        attributes = CourseRepository.get_course_attributes(db, course)
-
-        if info is None:
-            return None
 
         info['attributes'] = attributes
         info['prerequisites'] = CourseRepository.get_course_prerequisites(db, course)

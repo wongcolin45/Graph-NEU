@@ -7,6 +7,8 @@ type CourseFilterState = {
     maxCourseID: number;
     setMinCourseID: (minCourseCode: number) => void;
     setMaxCourseID: (maxCourseCode: number) => void;
+    attributes: string[]
+    setAttributes: (attributes: string[]) => void;
 };
 
 const useCourseFilterStore = create<CourseFilterState>((set) => ({
@@ -19,8 +21,12 @@ const useCourseFilterStore = create<CourseFilterState>((set) => ({
 
     minCourseID: 0,
     maxCourseID: 8000,
-    setMinCourseID: (minCourseCode: number) => {set({ minCourseID: minCourseCode })},
-    setMaxCourseID: (maxCourseCode: number) => {set({ maxCourseID: maxCourseCode })}
+    setMinCourseID: (minCourseCode: number): void => {set({ minCourseID: minCourseCode })},
+    setMaxCourseID: (maxCourseCode: number): void => {set({ maxCourseID: maxCourseCode })},
+
+    attributes: [],
+    setAttributes: (attributes: string[]): void => {set({ attributes: attributes })}
+
 }));
 
 export default useCourseFilterStore;

@@ -8,3 +8,4 @@ sqlalchemy
 #pytest
 rapidfuzz
 networkx
+

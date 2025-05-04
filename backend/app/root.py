@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.CourseFilter import CourseFilter
 from app.db.database import SessionLocal
 from app.dependencies import get_db
+from app.repositories.attribute_repo import AttributeRepository
 from app.repositories.department_repo import DepartmentRepository
 from app.services.course_service import CourseService
 from app.services.graph_service import GraphService
@@ -39,20 +40,23 @@ class CourseFilterRequest(BaseModel):
     departments: List[str]
     minCourseID: int
     maxCourseID: int
+    attributes: List[str]
 
 @app.post('/api/graph/course/{course}')
 async def get_graph(course, req: CourseFilterRequest = Body(...), db: Session = Depends(get_db)):
     departments = req.departments
     min = req.minCourseID
     max = req.maxCourseID
+    attributes = req.attributes
 
     print("\n\n\nCHECKINGG GRAPH REQUEST ")
     print(departments)
     print(min)
     print(max)
+    print(attributes)
     print('=====================\n\n\n')
 
-    filter = CourseFilter(min, max, departments)
+    filter = CourseFilter(min, max, departments, attributes)
 
     try:
         return GraphService.get_graph(db, course, filter)
@@ -100,3 +104,8 @@ def search_courses(course: str, limit: int, db: Session = Depends(get_db)):
 @app.get('/api/departments/all')
 def get_all_departments(db: Session = Depends(get_db)):
     return DepartmentRepository.get_departments(db)
+
+
+@app.get('/api/attributes')
+def get_all_attributes(db: Session = Depends(get_db)):
+    return AttributeRepository.get_all_attributes(db)

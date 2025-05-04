@@ -78,35 +78,8 @@ class GraphService:
                 longest = layers[layer]
         return longest
 
-
     @staticmethod
-    def get_graph(db: Session, course, input_filter: CourseFilter):
-        G = GraphService.create_graph(db, course, input_filter)
-        layers = GraphService.get_layers(G)
-
-        layer_to_nodes = defaultdict(list)
-
-        # assign nodes to each layer
-        for node, layer in layers.items():
-            layer_to_nodes[layer].append(node)
-
-        # calculate positions for each layer
-        positions = {}
-        horizontal_spacing = 300
-        vertical_spacing = 250
-
-        longest_layer = GraphService.get_longest_layer(layers)
-
-        for layer, nodes in layer_to_nodes.items():
-
-            padding = (longest_layer - len(nodes)) / 2 * horizontal_spacing
-
-            for index, node in enumerate(nodes):
-
-                x = index * horizontal_spacing + padding
-                y = layer * vertical_spacing
-                positions[node] = {"x": x, "y": y}
-
+    def graph_to_json(G: nx.DiGraph, positions):
         # Convert to JSON format
         nodes = []
         edges = []
@@ -141,6 +114,34 @@ class GraphService:
             'nodes': nodes,
             'edges': edges
         }
+
+    @staticmethod
+    def get_graph(db: Session, course, input_filter: CourseFilter):
+        G = GraphService.create_graph(db, course, input_filter)
+        layers = GraphService.get_layers(G)
+
+        layer_to_nodes = defaultdict(list)
+
+        # assign nodes to each layer
+        for node, layer in layers.items():
+            layer_to_nodes[layer].append(node)
+
+        # calculate positions for each layer
+        positions = {}
+        horizontal_spacing = 300
+        vertical_spacing = 250
+
+        longest_layer = GraphService.get_longest_layer(layers)
+
+        for layer, nodes in layer_to_nodes.items():
+            padding = (longest_layer - len(nodes)) / 2 * horizontal_spacing
+            for index, node in enumerate(nodes):
+                x = index * horizontal_spacing + padding
+                y = layer * vertical_spacing
+                positions[node] = {'x': x, 'y': y}
+
+        # Convert to JSON format
+        return GraphService.graph_to_json(G, positions)
 
 
 

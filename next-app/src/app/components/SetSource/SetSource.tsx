@@ -57,7 +57,7 @@ const SetSource = (): JSX.Element => {
         setSourceSelection(result);
     }
 
-    const handleKeyDown = (e): void => {
+    const handleKeyDown = (e: React.KeyboardEvent): void => {
         if (e.key === 'Enter') {
             setEditingSource(false)
         }
@@ -96,7 +96,7 @@ const SetSource = (): JSX.Element => {
                 <div className={styles.inputContainer}>
                     <input value={input}
                            onChange={(e): void => setInput(e.target.value)}
-                           onKeyDown={(e): void => handleKeyDown(e)}>
+                           onKeyDown={(e: React.KeyboardEvent): void => handleKeyDown(e)}>
                     </input>
                     {showClosestResults()}
                 </div>
