@@ -1,18 +1,22 @@
 from fastapi import HTTPException
-from sqlalchemy import String, cast
-from sqlalchemy.orm import Session, aliased
-from app.models import Course, Department, CourseAttribute, Attribute, CoursePrerequisite
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models import Department
 
 
 class DepartmentRepository:
 
     @staticmethod
-    def get_departments(db: Session):
-        results = (
-            db.query(
-                Department.prefix.label('prefix'),
-                Department.name.label('name'),
-            ).select_from(Department)
-            .all()
+    async def get_departments(db: AsyncSession):
+        stmt = (
+            select(
+                Department.prefix.label("prefix"),
+                Department.name.label("name"),
+            )
+            .select_from(Department)
+            .order_by(Department.name.asc())
         )
-        return [row._asdict() for row in results]
+
+        result = await db.execute(stmt)
+        rows = result.all()
+        return [dict(row._mapping) for row in rows]

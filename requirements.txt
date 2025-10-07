@@ -9,3 +9,7 @@ sqlalchemy
 rapidfuzz
 networkx
 
+
+SQLAlchemy>=2.0
+asyncpg>=0.29
+python-dotenv

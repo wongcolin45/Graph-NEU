@@ -1,111 +1,116 @@
-
 from typing import List
-
 from fastapi import FastAPI, Body, Depends, Query
-from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.CourseFilter import CourseFilter
-from app.db.database import SessionLocal
 from app.dependencies import get_db
 from app.repositories.attribute_repo import AttributeRepository
 from app.repositories.department_repo import DepartmentRepository
 from app.services.course_service import CourseService
 from app.services.graph_service import GraphService
 
-from fastapi.middleware.cors import CORSMiddleware
-
-from pydantic import BaseModel
-
 
 app = FastAPI()
 
+# --------------------------
+# CORS middleware
+# --------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-
-# PYTHONPATH=backend uvicorn app.root:app --reload
-
+# --------------------------
+# Root test endpoint
+# --------------------------
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 
+# --------------------------
+# Request models
+# --------------------------
 class CourseFilterRequest(BaseModel):
     departments: List[str]
     minCourseID: int
     maxCourseID: int
     attributes: List[str]
 
-@app.post('/api/graph/course/{course}')
-async def get_graph(course, req: CourseFilterRequest = Body(...), db: Session = Depends(get_db)):
-    departments = req.departments
-    min = req.minCourseID
-    max = req.maxCourseID
-    attributes = req.attributes
-
-    print("\n\n\nCHECKINGG GRAPH REQUEST ")
-    print(departments)
-    print(min)
-    print(max)
-    print(attributes)
-    print('=====================\n\n\n')
-
-    filter = CourseFilter(min, max, departments, attributes)
-
-    try:
-        return GraphService.get_graph(db, course, filter)
-    except Exception as e:
-        return {"error": str(e), "message": "Something went wrong"}
-
-# ==============================================================
-# GET Graph Endpoint
-# ==============================================================
-@app.get('/api/course/{course}')
-async def get_course(course: str, db: Session = Depends(get_db)):
-    return CourseService.get_course_data(db, course)
-
 
 class CourseCheckRequest(BaseModel):
     coursesTaken: List[str]
     courses: List[str]
 
-@app.post('/api/course/check')
-def check_courses(req: CourseCheckRequest = Body(...), db: Session = Depends(get_db)):
-    courses_taken = req.coursesTaken
+
+# ==============================================================
+# GRAPH ENDPOINTS
+# ==============================================================
+@app.post("/api/graph/course/{course}")
+async def get_graph(
+    course: str,
+    req: CourseFilterRequest = Body(...),
+    db: AsyncSession = Depends(get_db),
+):
+    departments = req.departments
+    min_id = req.minCourseID
+    max_id = req.maxCourseID
+    attributes = req.attributes
+
+    # print("\n\n\nCHECKING GRAPH REQUEST")
+    # print(departments)
+    # print(min_id)
+    # print(max_id)
+    # print(attributes)
+    # print("=====================\n\n\n")
+
+    course_filter = CourseFilter(min_id, max_id, departments, attributes)
+
+    try:
+        # If GraphService is sync, you can await it if converted to async later
+        return await GraphService.get_graph(db, course, course_filter)
+    except Exception as e:
+        return {"error": str(e), "message": "Something went wrong"}
+
+
+# ==============================================================
+# COURSE ENDPOINTS
+# ==============================================================
+@app.get("/api/course/{course}")
+async def get_course(course: str, db: AsyncSession = Depends(get_db)):
+    return await CourseService.get_course_data(db, course)
+
+
+@app.post("/api/course/check")
+async def check_courses(req: CourseCheckRequest = Body(...), db: AsyncSession = Depends(get_db)):
+    courses_taken = [c.replace(" ", "") for c in req.coursesTaken]
     courses = req.courses
-
-    for i in range(len(courses_taken)):
-        courses_taken[i] = courses_taken[i].replace(' ','')
-
-    result = CourseService.check_select_courses(db, courses, courses_taken)
+    return await CourseService.check_select_courses(db, courses, courses_taken)
 
 
-    return result
-
-
-
-@app.get('/api/course/search/{course}/{limit}')
-def search_courses(course: str, limit: int, db: Session = Depends(get_db)):
-
+@app.get("/api/course/search/{course}/{limit}")
+async def search_courses(course: str, limit: int, db: AsyncSession = Depends(get_db)):
     if len(course) == 0:
         return []
-
-    results = CourseService.search_courses(db, course, limit)
-
-    return results
+    return await CourseService.search_courses(db, course, limit)
 
 
-@app.get('/api/departments/all')
-def get_all_departments(db: Session = Depends(get_db)):
-    return DepartmentRepository.get_departments(db)
+# ==============================================================
+# DEPARTMENTS & ATTRIBUTES
+# ==============================================================
+@app.get("/api/departments/all")
+async def get_all_departments(db: AsyncSession = Depends(get_db)):
+    return await DepartmentRepository.get_departments(db)
 
 
-@app.get('/api/attributes')
-def get_all_attributes(db: Session = Depends(get_db)):
-    return AttributeRepository.get_all_attributes(db)
+@app.get("/api/attributes")
+async def get_all_attributes(db: AsyncSession = Depends(get_db)):
+    return await AttributeRepository.get_all_attributes(db)

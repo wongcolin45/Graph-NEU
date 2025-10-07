@@ -1,21 +1,22 @@
-
-
-
-
-from sqlalchemy import String, cast
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Attribute
 
 
 class AttributeRepository:
 
     @staticmethod
-    def get_all_attributes(db: Session):
-        results = (
-            db.query(
-                Attribute.tag.label('tag'),
-                Attribute.name.label('name')
-            ).select_from(Attribute)
-            .all()
+    async def get_all_attributes(db: AsyncSession):
+        stmt = (
+            select(
+                Attribute.tag.label("tag"),
+                Attribute.name.label("name"),
+            )
+            .select_from(Attribute)
+            .order_by(Attribute.name.asc())
         )
-        return [row._asdict() for row in results]
+
+        result = await db.execute(stmt)
+        rows = result.all()  # list[Row]
+        # Row -> dict via _mapping (stable API)
+        return [dict(row._mapping) for row in rows]

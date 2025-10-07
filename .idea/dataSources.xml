@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:postgresql://localhost:5432/coursesDB</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="postgres@iaizon-mvp-db.cr66q4uokz1m.us-east-2.rds.amazonaws.com" uuid="a0f75156-8e43-4279-9692-dc54f138b19d">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://iaizon-mvp-db.cr66q4uokz1m.us-east-2.rds.amazonaws.com:5432/postgres</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

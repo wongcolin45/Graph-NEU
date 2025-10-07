@@ -184,4 +184,5 @@ def create_df(url):
 
 df = create_df('https://catalog.northeastern.edu/course-descriptions/cs/')
 
-
+# Save DataFrame to CSV
+df.to_csv('courses.csv', index=False)
