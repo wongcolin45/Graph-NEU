@@ -128,8 +128,6 @@ def insert_prerequisites(df):
                 conn.rollback()
 
 
-
-
 def convert_str_list(df):
     columns_to_convert = ['prerequisites', 'corequisites', 'attributes', 'group_numbers']
     for col in columns_to_convert:
@@ -166,15 +164,27 @@ def insert_courses(df):
 
 
 
+
 # Main Script Here:
+
+urls = get_course_urls()
+
+# create csv
+# df = pd.DataFrame()
+#
+# for url in urls:
+#     new_df = create_df(url)
+#     df = pd.concat([df, new_df], ignore_index=True)
+#
+#
+# df.to_csv('courses.csv', index=False)
+
+
+
+
+# Populate DB
 df = pd.read_csv('courses.csv')
-
 convert_str_list(df)
-
 insert_courses(df)
-
 prereqs = df['prerequisites'][0]
-
-
-
 insert_prerequisites(df)
