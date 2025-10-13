@@ -17,7 +17,7 @@ conn = psycopg2.connect(
 # Create a cursor to run queries
 cursor = conn.cursor()
 
-# Get Course ID
+
 def get_course_id(department_tag, course_code):
     try:
         query = """
@@ -36,7 +36,7 @@ def get_course_id(department_tag, course_code):
         conn.rollback()
         return None
 
-# Get Department ID
+
 def get_department_id(department_tag):
     try:
         query = """
@@ -53,7 +53,7 @@ def get_department_id(department_tag):
         conn.rollback()
         return None
 
-# Add New Department
+
 def add_department(department_tag, department):
     try:
         query = """
@@ -66,7 +66,7 @@ def add_department(department_tag, department):
         print(e)
         conn.rollback()
 
-# Add Course Attributes
+
 def insert_attributes(course_id, attributes):
     for attribute in attributes:
         try:
@@ -94,7 +94,7 @@ def insert_attributes(course_id, attributes):
 
     conn.commit()
 
-# Add Course Prerequisites
+
 def insert_prerequisites(df):
     for index, row in df.iterrows():
         course_id = get_course_id(row['department_tag'], row['course_code'])
@@ -138,7 +138,9 @@ def convert_str_list(df):
             else x
         )
 
+
 def insert_courses(df):
+
     for index, row in df.iterrows():
         # Get the department id
         department_id = get_department_id(row['department_tag'])
@@ -159,7 +161,6 @@ def insert_courses(df):
             course_id = get_course_id(row['department_tag'], row['course_code'])
             insert_attributes(course_id, row['attributes'])
         except Exception as e:
-            print('inserting course failed '+str(e))
             conn.rollback()
 
 
@@ -184,6 +185,9 @@ urls = get_course_urls()
 
 # Populate DB
 df = pd.read_csv('courses.csv')
+
+print('DF IS '+str(len(df))+" long")
+
 convert_str_list(df)
 insert_courses(df)
 prereqs = df['prerequisites'][0]
