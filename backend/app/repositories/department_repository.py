@@ -1,22 +1,24 @@
-from fastapi import HTTPException
+# app/repositories/department_repository.py
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import Department
+from app.models import DepartmentORM
 
 
 class DepartmentRepository:
+    """Interface for interacting with departments in database"""
 
-    @staticmethod
-    async def get_departments(db: AsyncSession):
-        stmt = (
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+    async def get_departments(self):
+        query = (
             select(
-                Department.prefix.label("prefix"),
-                Department.name.label("name"),
+                DepartmentORM.prefix.label("prefix"),
+                DepartmentORM.name.label("name"),
             )
-            .select_from(Department)
-            .order_by(Department.name.asc())
+            .select_from(DepartmentORM)
+            .order_by(DepartmentORM.name.asc())
         )
-
-        result = await db.execute(stmt)
+        result = await self.db.execute(query)
         rows = result.all()
         return [dict(row._mapping) for row in rows]

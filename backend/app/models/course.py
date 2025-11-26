@@ -1,10 +1,10 @@
+# app/models/course.py
 from sqlalchemy import ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column
-
 from app.models.base import Base
 
 
-class Course(Base):
+class CourseORM(Base):
     __tablename__ = "courses"
 
     course_id: Mapped[int] = mapped_column(primary_key=True)

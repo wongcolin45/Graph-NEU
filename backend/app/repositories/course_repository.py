@@ -1,89 +1,79 @@
-from fastapi import HTTPException
+# app/repositories/course_repository.py
 from sqlalchemy import String, Integer, cast, select
 from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.CourseFilter import CourseFilter
-from app.models import Course, Department, CourseAttribute, Attribute, CoursePrerequisite
-
+from app.models import CourseORM, DepartmentORM, CourseAttributeORM, AttributeORM, CoursePrerequisiteORM
 
 default_filter = CourseFilter(0, 8000, [])
 
-
 class CourseRepository:
+    """Interface for interacting with courses in database"""
 
-    # ==============================================================
-    # GET THE COURSE NAME AND DESCRIPTION
-    # ==============================================================
-    @staticmethod
-    async def get_course_details(db: AsyncSession, course: str, course_filter: CourseFilter = default_filter):
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+
+    async def get_course_details(self, course: str, course_filter: CourseFilter = default_filter) -> dict | None:
         filters = [
-            (Department.prefix + cast(Course.course_code, String)) == course,
-            cast(Course.course_code, Integer) >= course_filter.min_course_code,
-            cast(Course.course_code, Integer) <= course_filter.max_course_code,
+            (DepartmentORM.prefix + cast(CourseORM.course_code, String)) == course,
+            cast(CourseORM.course_code, Integer) >= course_filter.min_course_code,
+            cast(CourseORM.course_code, Integer) <= course_filter.max_course_code,
         ]
         if course_filter.has_departments():
-            filters.append(Department.prefix.in_(course_filter.get_departments()))
+            filters.append(DepartmentORM.prefix.in_(course_filter.get_departments()))
 
-        stmt = (
+        query = (
             select(
-                (Department.prefix + cast(Course.course_code, String)).label("course"),
-                Course.name.label("name"),
-                Course.description.label("description"),
-                Course.credits.label("credits"),
+                (DepartmentORM.prefix + cast(CourseORM.course_code, String)).label("course"),
+                CourseORM.name.label("name"),
+                CourseORM.description.label("description"),
+                CourseORM.credits.label("credits"),
             )
-            .join(Department, Department.department_id == Course.department_id)
+            .join(DepartmentORM, DepartmentORM.department_id == CourseORM.department_id)
             .where(*filters)
         )
 
-        result = await db.execute(stmt)
+        result = await self.db.execute(query)
         row = result.first()
         return dict(row._mapping) if row else None
 
-    # ==============================================================
-    # GET LIST OF NU PATH ATTRIBUTES
-    # ==============================================================
-    @staticmethod
-    async def get_course_attributes(db: AsyncSession, course: str, course_filter: CourseFilter = default_filter):
-        stmt = (
-            select(Attribute.tag)
-            .select_from(Attribute)
-            .join(CourseAttribute, CourseAttribute.attribute_id == Attribute.attribute_id)
-            .join(Course, Course.course_id == CourseAttribute.course_id)
-            .join(Department, Department.department_id == Course.department_id)
-            .where(Department.prefix + cast(Course.course_code, String) == course)
+
+    async def get_course_attributes(self, course: str, course_filter: CourseFilter = default_filter):
+        query = (
+            select(AttributeORM.tag)
+            .select_from(AttributeORM)
+            .join(CourseAttributeORM, CourseAttributeORM.attribute_id == AttributeORM.attribute_id)
+            .join(CourseORM, CourseORM.course_id == CourseAttributeORM.course_id)
+            .join(DepartmentORM, DepartmentORM.department_id == CourseORM.department_id)
+            .where(DepartmentORM.prefix + cast(CourseORM.course_code, String) == course)
         )
 
-        result = await db.execute(stmt)
-        tags = result.scalars().all()  # list[str]
+        result = await self.db.execute(query)
+        tags = result.scalars().all()
 
         if not course_filter.check_attributes(tags):
             return None
         return tags
 
-    # ==============================================================
-    # GET PREREQUISITES GROUPS
-    # ==============================================================
-    @staticmethod
-    async def get_course_prerequisite_groups(db: AsyncSession, course: str):
-        P = aliased(Course)     # Prerequisite
-        PD = aliased(Department)  # Prerequisite Department
 
-        stmt = (
+    async def get_course_prerequisite_groups(self, course: str):
+        P = aliased(CourseORM)     # Prerequisite
+        PD = aliased(DepartmentORM)  # Prerequisite Department
+        query = (
             select(
                 (PD.prefix + cast(P.course_code, String)).label("course"),
-                CoursePrerequisite.group_number.label("group"),
+                CoursePrerequisiteORM.group_number.label("group"),
             )
-            .select_from(CoursePrerequisite)
-            .join(Course, Course.course_id == CoursePrerequisite.course_id)
-            .join(Department, Department.department_id == Course.department_id)
-            .join(P, P.course_id == CoursePrerequisite.prerequisite_id)
+            .select_from(CoursePrerequisiteORM)
+            .join(CourseORM, CourseORM.course_id == CoursePrerequisiteORM.course_id)
+            .join(DepartmentORM, DepartmentORM.department_id == CourseORM.department_id)
+            .join(P, P.course_id == CoursePrerequisiteORM.prerequisite_id)
             .join(PD, PD.department_id == P.department_id)
-            .where(Department.prefix + cast(Course.course_code, String) == course)
-            .order_by(CoursePrerequisite.group_number)
+            .where(DepartmentORM.prefix + cast(CourseORM.course_code, String) == course)
+            .order_by(CoursePrerequisiteORM.group_number)
         )
-
-        result = await db.execute(stmt)
+        result = await self.db.execute(query)
         rows = result.all()
 
         groups: list[list[str]] = []
@@ -98,16 +88,13 @@ class CourseRepository:
 
         return groups
 
-    # ==============================================================
-    # GET PREREQUISITES AS LIST OF COURSE CODES
-    # ==============================================================
-    @staticmethod
-    async def get_course_prerequisites(db: AsyncSession, course: str, course_filter: CourseFilter = default_filter):
-        P = aliased(Course)      # Prerequisite
-        PD = aliased(Department) # Prerequisite Department
+
+    async def get_course_prerequisites(self, course: str, course_filter: CourseFilter = default_filter):
+        P = aliased(CourseORM)      # Prerequisite
+        PD = aliased(DepartmentORM) # Prerequisite Department
 
         filters = [
-            (Department.prefix + cast(Course.course_code, String)) == course,
+            (DepartmentORM.prefix + cast(CourseORM.course_code, String)) == course,
             cast(P.course_code, Integer) >= course_filter.min_course_code,
             cast(P.course_code, Integer) <= course_filter.max_course_code,
         ]
@@ -116,24 +103,21 @@ class CourseRepository:
 
         stmt = (
             select((PD.prefix + cast(P.course_code, String)).label("course"))
-            .select_from(CoursePrerequisite)
-            .join(Course, Course.course_id == CoursePrerequisite.course_id)
-            .join(Department, Department.department_id == Course.department_id)
-            .join(P, P.course_id == CoursePrerequisite.prerequisite_id)
+            .select_from(CoursePrerequisiteORM)
+            .join(CourseORM, CourseORM.course_id == CoursePrerequisiteORM.course_id)
+            .join(DepartmentORM, DepartmentORM.department_id == CourseORM.department_id)
+            .join(P, P.course_id == CoursePrerequisiteORM.prerequisite_id)
             .join(PD, PD.department_id == P.department_id)
             .where(*filters)
         )
 
-        result = await db.execute(stmt)
+        result = await self.db.execute(stmt)
         return [row._mapping["course"] for row in result.all()]
 
-    # ==============================================================
-    # GET NEXT COURSES AS LIST OF COURSE CODES
-    # ==============================================================
-    @staticmethod
-    async def get_next_courses(db: AsyncSession, course: str, course_filter: CourseFilter = default_filter):
-        P = aliased(Course)       # Prerequisite
-        PD = aliased(Department)  # Prerequisite Department
+
+    async def get_next_courses(self, course: str, course_filter: CourseFilter = default_filter) -> dict:
+        P = aliased(CourseORM)       # Prerequisite
+        PD = aliased(DepartmentORM)  # Prerequisite Department
 
         filters = [
             (PD.prefix + cast(P.course_code, String)) == course,
@@ -143,17 +127,17 @@ class CourseRepository:
         if course_filter.has_departments():
             filters.append(PD.prefix.in_(course_filter.get_departments()))
 
-        stmt = (
-            select((Department.prefix + cast(Course.course_code, String)).label("course"))
-            .select_from(CoursePrerequisite)
-            .join(Course, Course.course_id == CoursePrerequisite.course_id)
-            .join(Department, Department.department_id == Course.department_id)
-            .join(P, P.course_id == CoursePrerequisite.prerequisite_id)
+        query = (
+            select((DepartmentORM.prefix + cast(CourseORM.course_code, String)).label("course"))
+            .select_from(CoursePrerequisiteORM)
+            .join(CourseORM, CourseORM.course_id == CoursePrerequisiteORM.course_id)
+            .join(DepartmentORM, DepartmentORM.department_id == CourseORM.department_id)
+            .join(P, P.course_id == CoursePrerequisiteORM.prerequisite_id)
             .join(PD, PD.department_id == P.department_id)
             .where(*filters)
         )
 
-        result = await db.execute(stmt)
+        result = await self.db.execute(query)
         # Deduplicate while preserving order
         seen = set()
         clean_results = []
@@ -164,36 +148,28 @@ class CourseRepository:
                 clean_results.append(code)
         return clean_results
 
-    # ==============================================================
-    # GET ALL COURSES
-    # ==============================================================
-    @staticmethod
-    async def get_all_courses(db: AsyncSession):
-        stmt = (
+
+    async def get_all_courses(self) -> list[dict]:
+        query = (
             select(
-                (Department.prefix + cast(Course.course_code, String)).label("course"),
-                Course.name.label("name"),
+                (DepartmentORM.prefix + cast(CourseORM.course_code, String)).label("course"),
+                CourseORM.name.label("name"),
             )
-            .join(Department, Department.department_id == Course.department_id)
+            .join(DepartmentORM, DepartmentORM.department_id == CourseORM.department_id)
         )
-        result = await db.execute(stmt)
+        result = await self.db.execute(query)
         return [dict(row._mapping) for row in result.all()]
 
-    # ==============================================================
-    # GET COURSES SIMILAR TO COURSE
-    # ==============================================================
-    @staticmethod
-    async def get_courses_like(db: AsyncSession, course: str):
-        # Use ILIKE for case-insensitive match
-        query = f"%{course.upper()}%"
-        stmt = (
+
+    async def get_courses_like(self, search_query: str) -> list[dict]:
+        query = (
             select(
-                (Department.prefix + cast(Course.course_code, String)).label("course"),
-                Course.name.label("name"),
+                (DepartmentORM.prefix + cast(CourseORM.course_code, String)).label("course"),
+                CourseORM.name.label("name"),
             )
-            .select_from(Course)
-            .join(Department, Department.department_id == Course.department_id)
-            .where((Department.prefix + cast(Course.course_code, String)).ilike(query))
+            .select_from(CourseORM)
+            .join(DepartmentORM, DepartmentORM.department_id == CourseORM.department_id)
+            .where((DepartmentORM.prefix + cast(CourseORM.course_code, String) + CourseORM.name).ilike(f"%{search_query}%"))
         )
-        result = await db.execute(stmt)
+        result = await self.db.execute(query)
         return [dict(row._mapping) for row in result.all()]

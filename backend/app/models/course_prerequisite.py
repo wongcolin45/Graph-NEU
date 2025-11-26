@@ -1,24 +1,10 @@
+# app/models/course_prerequisite.py
 from sqlalchemy import ForeignKey, Text, PrimaryKeyConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-
 from app.models.base import Base
 
 
-# CREATE TABLE course_prerequisites(
-#     course_id INT NOT NULL,
-# prerequisite_id INT NOT NULL,
-# PRIMARY KEY(course_id, prerequisite_id),
-# FOREIGN KEY (course_id) REFERENCES courses(course_id)
-# ON UPDATE CASCADE
-# ON DELETE CASCADE,
-# FOREIGN KEY (prerequisite_id) REFERENCES courses(course_id)
-# ON UPDATE CASCADE
-# ON DELETE CASCADE
-# );
-
-
-
-class CoursePrerequisite(Base):
+class CoursePrerequisiteORM(Base):
     __tablename__ = "course_prerequisites"
 
     course_id: Mapped[int] = mapped_column(

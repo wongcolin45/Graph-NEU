@@ -94,7 +94,8 @@ const SetSource = (): JSX.Element => {
         if (editingSource) {
             return (
                 <div className={styles.inputContainer}>
-                    <input value={input}
+                    <input
+                            value={input}
                            onChange={(e): void => setInput(e.target.value)}
                            onKeyDown={(e: React.KeyboardEvent): void => handleKeyDown(e)}>
                     </input>
@@ -102,9 +103,6 @@ const SetSource = (): JSX.Element => {
                 </div>
             )
         }
-
-
-
 
         if (sourceSelection === undefined) {
             return (
@@ -125,13 +123,14 @@ const SetSource = (): JSX.Element => {
 
     return (
         <div className={styles.setSource}>
-            <h2>{'Source Node'}</h2>
+            <h2>{'Root Node'}</h2>
             <div className={styles.sourceRow}>
                 {renderSource()}
-                <div className={styles.buttonGroup}>
-                    <button className={styles.editButton} onClick={handleEditClick}>{'✏️'}</button>
-                    <button className={styles.clearButton} onClick={handleResetClick}>{'🗑️'}</button>
-                </div>
+
+            </div>
+            <div className={styles.buttonGroup}>
+                <button className={styles.editButton} onClick={handleEditClick}>{'edit️'}</button>
+                <button className={styles.clearButton} onClick={handleResetClick}>{'clear'}</button>
             </div>
         </div>
     )
