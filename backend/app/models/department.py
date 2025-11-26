@@ -1,10 +1,10 @@
+# app/models/department.py
 from sqlalchemy import Text
 from sqlalchemy.orm import Mapped, mapped_column
-
 from app.models.base import Base
 
 
-class Department(Base):
+class DepartmentORM(Base):
     __tablename__ = "departments"
 
     department_id: Mapped[int] = mapped_column(primary_key=True)

@@ -1,16 +1,9 @@
+# app/models/attribute.py
 from sqlalchemy import Text
 from sqlalchemy.orm import Mapped, mapped_column
-
 from app.models.base import Base
 
-
-# CREATE TABLE attributes (
-#     attribute_id SERIAL PRIMARY KEY,
-# tag TEXT,
-# name TEXT
-# );
-
-class Attribute(Base):
+class AttributeORM(Base):
     __tablename__ = "attributes"
 
     attribute_id: Mapped[int] = mapped_column(primary_key=True)

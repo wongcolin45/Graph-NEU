@@ -10,10 +10,13 @@
 
 .inputContainer {
     position: relative;
+    padding: 0;
+    /*border: 1px solid black;*/
+    width: 100%;
 }
 
 .inputContainer input {
-    width: 20vh;
+    width: 95%;
     padding: 10px 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -55,6 +58,8 @@
     background-color: #f0f0f0;
 }
 
+
+
 .sourceSelection {
     display: inline-block;
     background-color: #e6f7ff;
@@ -75,6 +80,16 @@
     font-size: 14px;
     font-weight: 500;
     border: 1px solid #fbb6b6;
+    text-align: center;
+    width: 100%;
+}
+
+.sourceSelection,
+.unselectedSource {
+    width: 100%;
+    padding-top: 2vh;
+    padding-bottom: 2vh;
+    font-size: 18px;
 }
 
 .sourceRow {
@@ -88,6 +103,7 @@
 
 
 .buttonGroup {
+    margin-top: 1vh;
     display: flex;
     gap: 4px;
 }
@@ -98,8 +114,8 @@
     border: 1px solid #ddd;
     border-radius: 6px;
     padding: 6px;
-    width: 32px;
-    height: 32px;
+    width: 40vh;
+
     display: flex;
     align-items: center;
     justify-content: center;

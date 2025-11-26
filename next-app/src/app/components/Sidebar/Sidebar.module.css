@@ -1,5 +1,6 @@
 
 .sidebar {
+    z-index: 99999;
     width: 430px;
     flex-shrink: 0;
     position: sticky;

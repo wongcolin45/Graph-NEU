@@ -64,12 +64,14 @@ const Explore = (): JSX.Element  => {
         const url = `${BASE_URL}/api/graph/course/${source}`;
         console.log('min: '+minCourseID);
         console.log('max = '+maxCourseID);
+        console.log('POST BEING MADE WITH '+source);
         const response = await axios.post(url, {
           departments: Array.from(departments),
           minCourseID: minCourseID,
           maxCourseID: maxCourseID,
           attributes: attributes
         });
+
         setGraph(response.data);
       } catch (error) {
         console.error(error);

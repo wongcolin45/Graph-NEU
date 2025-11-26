@@ -1,18 +1,43 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
+# app/services/graph_service.py
 from app.CourseFilter import CourseFilter
-from app.repositories.course_repo import CourseRepository
 from app.services.course_service import CourseService
-
-import networkx as nx
 from collections import defaultdict
+import networkx as nx
 
 
 class GraphService:
 
-    @staticmethod
-    async def create_graph(db: AsyncSession, root_course: str, input_filter: CourseFilter):
-        G = nx.DiGraph()
+    def __init__(self, course_service: CourseService):
+        self.course_service = course_service
+
+
+    async def get_graph(self, course: str, input_filter: CourseFilter):
+        G = await self.create_graph(course, input_filter)
+        layers = self._get_layers(G)
+
+        layer_to_nodes: dict[int, list[str]] = defaultdict(list)
+        for node, layer in layers.items():
+            layer_to_nodes[layer].append(node)
+
+        # calculate positions for each layer
+        positions: dict[str, dict[str, float]] = {}
+        horizontal_spacing = 300
+        vertical_spacing = 250
+
+        longest_layer_size = self._get_longest_layer(layers)
+
+        for layer, nodes in layer_to_nodes.items():
+            padding = (longest_layer_size - len(nodes)) / 2 * horizontal_spacing
+            for index, node in enumerate(nodes):
+                x = index * horizontal_spacing + padding
+                y = layer * vertical_spacing
+                positions[node] = {"x": x, "y": y}
+
+        return self._graph_to_json(G, positions)
+
+
+    async def create_graph(self, root_course: str, input_filter: CourseFilter):
+        g = nx.DiGraph()
         queue = [root_course]
         first = True
 
@@ -21,41 +46,41 @@ class GraphService:
 
             # first call ignores filter per your original logic
             if first:
-                data = await CourseService.get_course_data(db, current)
+                data = await self.course_service.get_course_data(current)
                 first = False
             else:
-                data = await CourseService.get_course_data(db, current, course_filter=input_filter)
+                data = await self.course_service.get_course_data(current, course_filter=input_filter)
 
             if data is None:
                 continue
 
             node = data["course"].replace(" ", "")
 
-            if node not in G:
-                G.add_node(node, data=data)
+            if node not in g:
+                g.add_node(node, data=data)
 
             # Add Edges
-            next_courses = await CourseRepository.get_next_courses(db, node, course_filter=input_filter)
+            next_courses = await self.course_service.get_next_courses(node, course_filter=input_filter)
 
             for next_node in next_courses:
-                next_data = await CourseService.get_course_data(db, next_node, course_filter=input_filter)
+                next_data = await self.course_service.get_course_data(next_node, course_filter=input_filter)
                 if next_data is None:
                     continue
 
                 next_code = next_data["course"].replace(" ", "")
 
-                if next_code not in G:
-                    G.add_node(next_code, data=next_data)
+                if next_code not in g:
+                    g.add_node(next_code, data=next_data)
 
-                G.add_edge(node, next_code)
+                g.add_edge(node, next_code)
 
                 # add to queue
                 queue.append(next_node)
 
-        return G
+        return g
 
-    @staticmethod
-    def get_layers(graph: nx.DiGraph):
+
+    def _get_layers(self, graph: nx.DiGraph):
         layers: dict[str, int] = {}
         for node in nx.topological_sort(graph):
             parents = list(graph.predecessors(node))
@@ -65,8 +90,8 @@ class GraphService:
                 layers[node] = 1 + max(layers[p] for p in parents)
         return layers
 
-    @staticmethod
-    def get_longest_layer(layers: dict[str, int]) -> int:
+
+    def _get_longest_layer(self, layers: dict[str, int]) -> int:
         """
         Return the maximum number of nodes in any layer.
         `layers` maps node -> layer_index, so we count nodes per layer.
@@ -76,16 +101,14 @@ class GraphService:
             counts[layer_idx] += 1
         return max(counts.values(), default=0)
 
-    @staticmethod
-    def graph_to_json(G: nx.DiGraph, positions: dict[str, dict[str, float]]):
-        # Convert to JSON format
+
+    def _graph_to_json(self, g: nx.DiGraph, positions: dict[str, dict[str, float]]):
         nodes = []
         edges = []
 
-        for node in G.nodes:
-            data = dict(G.nodes[node]["data"])  # copy so we can mutate safely
+        for node in g.nodes:
+            data = dict(g.nodes[node]["data"])
             data["label"] = f"{data['course']}: {data['name']}"
-            # prune large/unused fields for the front-end
             data.pop("prerequisites", None)
 
             attributes = data.get("attributes") or []
@@ -100,7 +123,7 @@ class GraphService:
                 "data": data,
             })
 
-        for source, target in G.edges:
+        for source, target in g.edges:
             edges.append({
                 "id": f"{source}-{target}",
                 "source": source,
@@ -109,27 +132,5 @@ class GraphService:
 
         return {"nodes": nodes, "edges": edges}
 
-    @staticmethod
-    async def get_graph(db: AsyncSession, course: str, input_filter: CourseFilter):
-        G = await GraphService.create_graph(db, course, input_filter)
-        layers = GraphService.get_layers(G)
 
-        layer_to_nodes: dict[int, list[str]] = defaultdict(list)
-        for node, layer in layers.items():
-            layer_to_nodes[layer].append(node)
 
-        # calculate positions for each layer
-        positions: dict[str, dict[str, float]] = {}
-        horizontal_spacing = 300
-        vertical_spacing = 250
-
-        longest_layer_size = GraphService.get_longest_layer(layers)
-
-        for layer, nodes in layer_to_nodes.items():
-            padding = (longest_layer_size - len(nodes)) / 2 * horizontal_spacing
-            for index, node in enumerate(nodes):
-                x = index * horizontal_spacing + padding
-                y = layer * vertical_spacing
-                positions[node] = {"x": x, "y": y}
-
-        return GraphService.graph_to_json(G, positions)

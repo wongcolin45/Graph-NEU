@@ -1,22 +1,25 @@
+# app/repositories/attribute_repository.py
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import Attribute
+from app.models import AttributeORM
 
 
 class AttributeRepository:
+    """Interface for interacting with attributes in database"""
 
-    @staticmethod
-    async def get_all_attributes(db: AsyncSession):
-        stmt = (
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+
+    async def get_all_attributes(self):
+        query = (
             select(
-                Attribute.tag.label("tag"),
-                Attribute.name.label("name"),
+                AttributeORM.tag.label("tag"),
+                AttributeORM.name.label("name"),
             )
-            .select_from(Attribute)
-            .order_by(Attribute.name.asc())
+            .select_from(AttributeORM)
+            .order_by(AttributeORM.name.asc())
         )
-
-        result = await db.execute(stmt)
+        result = await self.db.execute(query)
         rows = result.all()  # list[Row]
-        # Row -> dict via _mapping (stable API)
         return [dict(row._mapping) for row in rows]

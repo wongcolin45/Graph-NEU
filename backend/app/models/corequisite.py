@@ -1,19 +1,17 @@
+# app/models/corequisite.py
 import enum
-
 from sqlalchemy import ForeignKey, Enum, Text
 from sqlalchemy.orm import mapped_column, Mapped
-
 from app.models.base import Base
 
 
-# --- Define the ENUM type in Python ---
 class CorequisiteType(enum.Enum):
     LECTURE = "lecture"
     LAB = "lab"
     SEMINAR = "seminar"
 
 
-class Corequisite(Base):
+class CorequisiteORM(Base):
     __tablename__ = "corequisites"
     corequisite_id: Mapped[int] = mapped_column(primary_key=True)
     course_id: Mapped[int | None] = mapped_column(

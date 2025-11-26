@@ -1,21 +1,10 @@
+# app/models/course_attribute.py
 from sqlalchemy import Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
-
 from app.models.base import Base
 
 
-# CREATE TABLE course_attributes (
-#     course_id INT NOT NULL,
-# attribute_id INT NOT NULL,
-# FOREIGN KEY (course_id) REFERENCES courses(course_id)
-# ON UPDATE CASCADE ON DELETE CASCADE,
-# FOREIGN KEY (attribute_id) REFERENCES attributes(attribute_id)
-# ON UPDATE CASCADE ON DELETE CASCADE
-# );
-
-
-
-class CourseAttribute(Base):
+class CourseAttributeORM(Base):
     __tablename__ = "course_attributes"
 
     course_id: Mapped[int] = mapped_column(
