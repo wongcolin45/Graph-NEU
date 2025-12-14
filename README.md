@@ -13,9 +13,3 @@ Quick Demo:  https://vimeo.com/1081147967/1d5ee570a3?share=copy
 - 🔁 View dependencies and future options for any course
 - 🧠 Built with intelligent backend logic via **FastAPI**
 
-## Tech Stack
-
-| Frontend        | Backend          | Database                      |
-|-----------------|------------------|-------------------------------|
-| Next.js + React | FastAPI (Python) | PostgreSQL (course info)      |
-| React Flow      | Pydantic         | MongoDB (student roadmap)     |
