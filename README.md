@@ -9,7 +9,7 @@ Quick Demo:  https://vimeo.com/1081147967/1d5ee570a3?share=copy
 
 - 📈 Visual course graphs using **React Flow**
 - ✅ Track completed courses with real-time updates
-- 📚 Fetch course data from **PostgreSQL** and **MongoDB**
+- 📚 Fetch course data from **PostgreSQL** Database populated through webscraping
 - 🔁 View dependencies and future options for any course
 - 🧠 Built with intelligent backend logic via **FastAPI**
 
