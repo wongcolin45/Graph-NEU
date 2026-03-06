@@ -42,7 +42,7 @@ const CourseEdge = ({id, source, target,
 
         if (status.satisfied) {
             if (coursesTaken.has(course)) {
-                return { stroke: '#d1d5db', strokeWidth: 1.5 };
+                return { stroke: '#86efac', strokeWidth: 2 };
             }
             return { stroke: '#3b82f6', strokeWidth: 2 };
         }

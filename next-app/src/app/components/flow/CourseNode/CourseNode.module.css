@@ -5,7 +5,7 @@
     border-radius: 10px;
     padding: 10px 12px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
-    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
     width: 210px;
     position: relative;
     display: flex;
@@ -13,10 +13,67 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
+    overflow: hidden; /* clips the left accent bar */
+}
+
+/* Left accent bar — hidden by default, shown per state */
+.node::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 10px 0 0 10px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
 }
 
 .node:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ── State: completed ────────────────────────────────── */
+.nodeTaken {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.nodeTaken::before {
+    background: #22c55e;
+    opacity: 1;
+}
+
+.nodeTaken .courseCode {
+    color: #15803d;
+}
+
+.nodeTaken .courseName {
+    color: #4ade80;
+}
+
+/* ── State: available ────────────────────────────────── */
+.nodeAvailable {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    border-style: solid;
+}
+
+.nodeAvailable::before {
+    background: #3b82f6;
+    opacity: 1;
+}
+
+.nodeAvailable .courseCode {
+    color: #1d4ed8;
+}
+
+/* ── State: locked ───────────────────────────────────── */
+.nodeLocked {
+    background: #fafafa;
+    border-color: #e5e7eb;
+    border-style: dashed;
+    opacity: 0.55;
 }
 
 /* ── Text content ───────────────────────────────────── */
@@ -26,6 +83,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    padding-left: 4px; /* clearance from the accent bar */
 }
 
 .courseCode {
@@ -35,6 +93,24 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.checkBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    background: #22c55e;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 8px;
+    font-weight: 800;
+    flex-shrink: 0;
+    line-height: 1;
 }
 
 .courseName {
@@ -171,6 +247,134 @@
 .metaPillBlue {
     background: #eff6ff;
     color: #1d4ed8;
+}
+
+/* ── Prereq modal ───────────────────────────────────── */
+.prereqModal {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+    z-index: 1000;
+    overflow: hidden;
+    animation: popIn 0.15s ease;
+}
+
+.prereqHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 8px;
+}
+
+.prereqTitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 2px;
+}
+
+.prereqSubtitle {
+    font-size: 11px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.prereqBody {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.andDivider {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    text-align: center;
+    padding: 4px 0;
+}
+
+.prereqGroup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.orLabel {
+    font-size: 11px;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.prereqBtn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.prereqBtn:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+}
+
+.prereqBtnTaken {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #15803d;
+}
+
+.prereqBtnTaken:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #dc2626;
+}
+
+.checkmark {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.prereqFooter {
+    padding: 10px 14px 12px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.markAllBtn {
+    width: 100%;
+    padding: 8px;
+    background: #0070f3;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.markAllBtn:hover {
+    background: #005ed4;
 }
 
 /* ── Toast ──────────────────────────────────────────── */
