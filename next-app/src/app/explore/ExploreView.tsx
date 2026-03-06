@@ -28,13 +28,27 @@ export type CourseStatus = { satisfied: boolean; message: string; missing_groups
 export type CourseStatusMap = Map<string, CourseStatus>;
 
 
-// Inner component — must live inside ReactFlowProvider to use useReactFlow
-const FlowCanvas = ({
-    nodes,
-    edges,
-}: {
+type LayoutDirection = 'LR' | 'TD';
+
+const panelBtnStyle: React.CSSProperties = {
+    background: '#fff',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    padding: '6px 12px',
+    fontSize: '12px',
+    fontWeight: 600,
+    color: '#374151',
+    cursor: 'pointer',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+    marginBottom: '8px',
+    marginRight: '8px',
+};
+
+const FlowCanvas = ({ nodes, edges, layout, onLayoutChange }: {
     nodes: Node[];
     edges: Edge[];
+    layout: LayoutDirection;
+    onLayoutChange: (l: LayoutDirection) => void;
 }) => {
     const { fitView } = useReactFlow();
 
@@ -50,33 +64,46 @@ const FlowCanvas = ({
             proOptions={{ hideAttribution: true }}
             style={{ width: '100%', height: '100%' }}
         >
-            <Background
-                variant={BackgroundVariant.Dots}
-                gap={28}
-                size={1.2}
-                color="#d1d5db"
-            />
+            <Background variant={BackgroundVariant.Dots} gap={28} size={1.2} color="#d1d5db" />
             <Controls showInteractive={false} />
             <Panel position="bottom-right">
-                <button
-                    onClick={() => fitView({ padding: 0.15, duration: 400 })}
-                    title="Fit graph to screen"
-                    style={{
-                        background: '#fff',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: '#374151',
-                        cursor: 'pointer',
-                        boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                        marginBottom: '8px',
-                        marginRight: '8px',
-                    }}
-                >
-                    Fit view
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', marginRight: '8px' }}>
+                        <button
+                            onClick={() => onLayoutChange('LR')}
+                            title="Left-to-right layout"
+                            style={{
+                                ...panelBtnStyle,
+                                marginBottom: 0, marginRight: 0,
+                                background: layout === 'LR' ? '#eff6ff' : '#fff',
+                                borderColor: layout === 'LR' ? '#93c5fd' : '#e5e7eb',
+                                color: layout === 'LR' ? '#1d4ed8' : '#374151',
+                            }}
+                        >
+                            → LR
+                        </button>
+                        <button
+                            onClick={() => onLayoutChange('TD')}
+                            title="Top-to-bottom layout"
+                            style={{
+                                ...panelBtnStyle,
+                                marginBottom: 0, marginRight: 0,
+                                background: layout === 'TD' ? '#eff6ff' : '#fff',
+                                borderColor: layout === 'TD' ? '#93c5fd' : '#e5e7eb',
+                                color: layout === 'TD' ? '#1d4ed8' : '#374151',
+                            }}
+                        >
+                            ↓ TD
+                        </button>
+                    </div>
+                    <button
+                        onClick={() => fitView({ padding: 0.15, duration: 400 })}
+                        title="Fit graph to screen"
+                        style={panelBtnStyle}
+                    >
+                        Fit view
+                    </button>
+                </div>
             </Panel>
         </ReactFlow>
     );
@@ -96,12 +123,11 @@ const ExploreView = ({ initialCourse }: { initialCourse?: string }): JSX.Element
 
     const [courseStatusMap, setCourseStatusMap] = useState<CourseStatusMap>(new Map());
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [layout, setLayout] = useState<LayoutDirection>('LR');
     const [graph, setGraph] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
 
     useEffect(() => {
-        if (initialCourse) {
-            setSource(decodeURIComponent(initialCourse));
-        }
+        if (initialCourse) setSource(decodeURIComponent(initialCourse));
     }, [initialCourse]);
 
     useEffect(() => {
@@ -113,7 +139,8 @@ const ExploreView = ({ initialCourse }: { initialCourse?: string }): JSX.Element
                     departments: Array.from(departments),
                     minCourseID,
                     maxCourseID,
-                    attributes
+                    attributes,
+                    layout,
                 });
                 setGraph(response.data);
             } catch (error) {
@@ -121,7 +148,7 @@ const ExploreView = ({ initialCourse }: { initialCourse?: string }): JSX.Element
             }
         };
         updateGraph();
-    }, [source, departments, minCourseID, maxCourseID, attributes]);
+    }, [source, departments, minCourseID, maxCourseID, attributes, layout]);
 
     useEffect(() => {
         const updateCourseStatusMap = async () => {
@@ -140,7 +167,6 @@ const ExploreView = ({ initialCourse }: { initialCourse?: string }): JSX.Element
         };
         updateCourseStatusMap();
     }, [coursesTaken, graph]);
-
 
     const renderContents = (): JSX.Element => {
         if (source === '') {
@@ -162,14 +188,14 @@ const ExploreView = ({ initialCourse }: { initialCourse?: string }): JSX.Element
             return <Loader/>;
         }
 
-        const styledNodes: Node[] = graph.nodes.map((node) => ({
+        const styledNodes: Node[] = graph.nodes.map(node => ({
             ...node,
             type: 'graphNode',
             draggable: true,
-            data: { ...node.data, courseStatusMap }
+            data: { ...node.data, courseStatusMap, layout },
         }));
 
-        const styledEdges: Edge[] = graph.edges.map((edge) => ({
+        const styledEdges: Edge[] = graph.edges.map(edge => ({
             ...edge,
             type: 'graphEdge',
             data: { courseStatusMap }
@@ -177,7 +203,7 @@ const ExploreView = ({ initialCourse }: { initialCourse?: string }): JSX.Element
 
         return (
             <ReactFlowProvider>
-                <FlowCanvas nodes={styledNodes} edges={styledEdges} />
+                <FlowCanvas nodes={styledNodes} edges={styledEdges} layout={layout} onLayoutChange={setLayout} />
             </ReactFlowProvider>
         );
     };

@@ -9,7 +9,7 @@ class GraphService:
     def __init__(self, course_service: CourseService):
         self.course_service = course_service
 
-    async def get_graph(self, course: str, input_filter: CourseFilter):
+    async def get_graph(self, course: str, input_filter: CourseFilter, layout: str = 'LR'):
         G = await self.create_graph(course, input_filter)
         layers = self._get_layers(G)
 
@@ -20,16 +20,25 @@ class GraphService:
         layer_to_nodes = self._reduce_crossings(G, layer_to_nodes, iterations=8)
 
         positions: dict[str, dict[str, float]] = {}
-        horizontal_spacing = 260
-        vertical_spacing = 160
+
+        if layout == 'TD':
+            layer_spacing = 160   # vertical gap between rows
+            node_spacing = 260    # horizontal gap between nodes (node width is 210px)
+        else:  # LR
+            layer_spacing = 300   # horizontal gap between columns
+            node_spacing = 160    # vertical gap between nodes (node height ~50px)
 
         longest_layer_size = self._get_longest_layer(layers)
 
         for layer, nodes in layer_to_nodes.items():
-            padding = (longest_layer_size - len(nodes)) / 2 * horizontal_spacing
+            padding = (longest_layer_size - len(nodes)) / 2 * node_spacing
             for index, node in enumerate(nodes):
-                x = index * horizontal_spacing + padding
-                y = layer * vertical_spacing
+                if layout == 'TD':
+                    x = index * node_spacing + padding
+                    y = layer * layer_spacing
+                else:  # LR
+                    x = layer * layer_spacing
+                    y = index * node_spacing + padding
                 positions[node] = {"x": x, "y": y}
 
         return self._graph_to_json(G, positions)

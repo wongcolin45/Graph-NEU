@@ -36,6 +36,7 @@ class CourseFilterRequest(BaseModel):
     minCourseID: Optional[int] = None
     maxCourseID: Optional[int] = None
     attributes: List[str]
+    layout: Optional[str] = 'LR'
 
 class CourseCheckRequest(BaseModel):
     coursesTaken: List[str]
@@ -52,13 +53,12 @@ async def get_graph(
     min_id = req.minCourseID
     max_id = req.maxCourseID
     attributes = req.attributes
-
+    layout = req.layout or 'LR'
 
     course_filter = CourseFilter(min_id, max_id, departments, attributes)
 
     try:
-        # If GraphService is sync, you can await it if converted to async later
-        return await graph_service.get_graph(course, course_filter)
+        return await graph_service.get_graph(course, course_filter, layout)
     except Exception as e:
         return {"error": str(e), "message": "Something went wrong"}
 

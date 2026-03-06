@@ -12,12 +12,13 @@ interface CourseData {
     description: string,
     credits: number,
     attributes: string,
-    courseStatusMap: CourseStatusMap
+    courseStatusMap: CourseStatusMap,
+    layout: 'LR' | 'TD',
 }
 
 const CourseNode = ({ data }: { data: CourseData }) => {
 
-    const { label, course, name, description, credits, attributes, courseStatusMap } = data;
+    const { course, name, description, credits, attributes, courseStatusMap, layout } = data;
 
     const coursesTaken = useUserDataStore((state) => state.coursesTaken);
     const addCourse    = useUserDataStore((state) => state.addCourse);
@@ -179,8 +180,8 @@ const CourseNode = ({ data }: { data: CourseData }) => {
                     <span className={styles.courseName}>{name}</span>
                 </div>
                 <button className={styles.infoBtn} onClick={handleInfoClick}>i</button>
-                <Handle type="target" position={Position.Top}/>
-                <Handle type="source" position={Position.Bottom}/>
+                <Handle type="target" position={layout === 'TD' ? Position.Top : Position.Left}/>
+                <Handle type="source" position={layout === 'TD' ? Position.Bottom : Position.Right}/>
             </div>
         </>
     );
