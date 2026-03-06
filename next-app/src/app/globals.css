@@ -1,11 +1,9 @@
 * {
-  font-family: 'Inter', sans-serif;
   font-family: 'Rubik', sans-serif;
- 
 }
 
 :root {
-  --nav-h: 64px;   /* adjust if your navbar is taller / shorter */
+  --nav-h: 64px;
 }
 
 

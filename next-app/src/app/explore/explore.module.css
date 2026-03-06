@@ -15,23 +15,30 @@
     height: 100%;
 }
 
-.sidebarButton {
-    color: black;
-    border: none;
-    border-radius: 15px;
-    margin-top: 10px;
-    margin-left: 10px;
-    width: 50px;
-    height: 50px;
-    font-size: 25px;
-    /*position: absolute;*/
+.sidebarToggle {
     position: fixed;
+    top: 50vh;
+    transform: translateY(-50%);
     z-index: 999999;
-    top: calc(var(--nav-h) + 16px);
+    width: 20px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    font-size: 14px;
+    color: #9ca3af;
+    cursor: pointer;
+    box-shadow: 2px 0 6px rgba(0,0,0,0.06);
+    transition: left 0.25s ease, color 0.15s ease, background 0.15s ease;
+    padding: 0;
 }
 
-.sidebarButton:hover {
-    cursor: pointer;
+.sidebarToggle:hover {
+    background: #f0f7ff;
     color: #0070f3;
 }
 

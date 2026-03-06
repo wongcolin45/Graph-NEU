@@ -3,13 +3,13 @@
     top: 0;
     z-index: 100;
     background-color: #ffffff;
-    padding: 12px 24px;
+    padding: 0 24px;
     border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* subtle shadow */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 50px;
+    height: 64px;
 }
 
 .navbar h1 {
@@ -41,17 +41,22 @@
 }
 
 .left h1 {
-    font-size: 32px;
-    margin-left: -10px;
+    font-size: 20px;
+    font-weight: 700;
+    margin-left: 8px;
+    letter-spacing: -0.3px;
 }
 
 .login {
-    font-weight: 500;
-    border: 3px solid black;
-    padding: 8px;
-    border-radius: 4px;
+    font-weight: 600;
+    border: 1.5px solid #0070f3;
+    color: #0070f3 !important;
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .login:hover {
-    border: 3px solid #0070f3;
+    background-color: #0070f3;
+    color: #fff !important;
 }

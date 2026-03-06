@@ -6,6 +6,7 @@
     </facet>
   </component>
   <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$/../../CS_Program_Comparator" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/backend" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
