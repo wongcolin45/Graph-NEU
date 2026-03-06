@@ -15,67 +15,69 @@ interface CourseData {
     courseStatusMap: CourseStatusMap
 }
 
-const CourseNode = ({ data }: { data: CourseData}) => {
+const CourseNode = ({ data }: { data: CourseData }) => {
 
-    const {label, course, name, description, credits, attributes, courseStatusMap} = data;
+    const { label, course, name, description, credits, attributes, courseStatusMap } = data;
 
     const coursesTaken = useUserDataStore((state) => state.coursesTaken);
-    const addCourse = useUserDataStore((state) => state.addCourse);
+    const addCourse    = useUserDataStore((state) => state.addCourse);
     const removeCourse = useUserDataStore((state) => state.removeCourse);
 
-    const canTake = useCallback((): boolean => {
-        const id = course.replace(/\s+/g, '');
-        const status: CourseStatus | undefined = courseStatusMap.get(id);
-        return status != undefined && status.satisfied;
-    }, [course, courseStatusMap]);
+    const getStatus = useCallback((): CourseStatus | undefined =>
+        courseStatusMap.get(course.replace(/\s+/g, '')),
+    [course, courseStatusMap]);
 
+    const canTake = useCallback((): boolean => {
+        const s = getStatus();
+        return s != null && s.satisfied;
+    }, [getStatus]);
+
+    // Auto-remove if prerequisites were revoked
     useEffect(() => {
         if (coursesTaken.has(course) && !canTake()) {
             removeCourse(course);
         }
     }, [coursesTaken, canTake]);
 
-    const [showCourseInfo, setShowCourseInfo] = useState<boolean>(false);
-    const [toast, setToast] = useState<string | null>(null);
+    // Auto-close prereq modal once node becomes unlocked
+    useEffect(() => {
+        if (canTake()) setShowPrereqs(false);
+    }, [canTake]);
+
+    const [showInfo,    setShowInfo]    = useState(false);
+    const [showPrereqs, setShowPrereqs] = useState(false);
 
     const handleNodeClick = () => {
-        if (canTake()) {
-            if (coursesTaken.has(course)) {
-                removeCourse(course);
-            } else {
-                addCourse(course);
-            }
+        const status = getStatus();
+
+        // Status map not loaded yet — do nothing
+        if (status === undefined) return;
+
+        if (status.satisfied) {
+            coursesTaken.has(course) ? removeCourse(course) : addCourse(course);
             return;
         }
-        const status: CourseStatus | undefined = courseStatusMap.get(course.replace(/\s+/g, ''));
-        if (status != undefined) {
-            setToast(status.message);
-            setTimeout(() => setToast(null), 3500);
-        }
+
+        // Explicitly locked — show prereq helper
+        setShowPrereqs(prev => !prev);
+        setShowInfo(false);
     };
 
     const handleInfoClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setShowCourseInfo(prev => !prev);
+        setShowInfo(prev => !prev);
+        setShowPrereqs(false);
     };
 
-    const handleCloseInfo = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setShowCourseInfo(false);
+    const nodeStateClass = () => {
+        if (coursesTaken.has(course)) return styles.nodeTaken;
+        if (canTake())               return styles.nodeAvailable;
+        return styles.nodeLocked;
     };
 
-    const nodeStyle = () => {
-        if (coursesTaken.has(course)) {
-            return { background: '#f3f4f6', borderColor: '#d1d5db', opacity: 0.75 };
-        }
-        if (canTake()) {
-            return { background: '#eff6ff', borderColor: '#3b82f6', borderStyle: 'solid' };
-        }
-        return { background: '#fafafa', borderColor: '#e5e7eb', borderStyle: 'dashed', opacity: 0.6 };
-    };
-
+    /* ── Course info popup ─────────────────────── */
     const courseInfoPopup = (): JSX.Element => {
-        if (!showCourseInfo) return <></>;
+        if (!showInfo) return <></>;
         return (
             <div className={styles.courseInfo}>
                 <div className={styles.courseInfoHeader}>
@@ -83,7 +85,7 @@ const CourseNode = ({ data }: { data: CourseData}) => {
                         <span className={styles.courseInfoCode}>{course}</span>
                         <h3 className={styles.courseInfoName}>{name}</h3>
                     </div>
-                    <button className={styles.closeBtn} onClick={handleCloseInfo}>✕</button>
+                    <button className={styles.closeBtn} onClick={(e) => { e.stopPropagation(); setShowInfo(false); }}>✕</button>
                 </div>
                 <div className={styles.courseInfoBody}>
                     {description && <p className={styles.courseInfoDesc}>{description}</p>}
@@ -102,13 +104,78 @@ const CourseNode = ({ data }: { data: CourseData}) => {
         );
     };
 
+    /* ── Missing prerequisites modal ───────────── */
+    const prereqModal = (): JSX.Element => {
+        if (!showPrereqs) return <></>;
+        const status = getStatus();
+        if (!status || status.satisfied) return <></>;
+
+        const groups = status.missing_groups ?? [];
+        const allMissing = groups.flat();
+
+        return (
+            <div className={styles.prereqModal} onClick={e => e.stopPropagation()}>
+                <div className={styles.prereqHeader}>
+                    <div>
+                        <p className={styles.prereqTitle}>Missing prerequisites</p>
+                        <p className={styles.prereqSubtitle}>Click a course to mark it as completed</p>
+                    </div>
+                    <button className={styles.closeBtn} onClick={(e) => { e.stopPropagation(); setShowPrereqs(false); }}>✕</button>
+                </div>
+
+                <div className={styles.prereqBody}>
+                    {groups.length > 0 ? groups.map((group, gi) => (
+                        <div key={gi}>
+                            {gi > 0 && <div className={styles.andDivider}>and</div>}
+                            <div className={styles.prereqGroup}>
+                                {group.map((prereq, pi) => (
+                                    <React.Fragment key={prereq}>
+                                        {pi > 0 && <span className={styles.orLabel}>or</span>}
+                                        <button
+                                            className={`${styles.prereqBtn} ${coursesTaken.has(prereq) ? styles.prereqBtnTaken : ''}`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                coursesTaken.has(prereq) ? removeCourse(prereq) : addCourse(prereq);
+                                            }}
+                                        >
+                                            {coursesTaken.has(prereq) && <span className={styles.checkmark}>✓</span>}
+                                            {prereq}
+                                        </button>
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        </div>
+                    )) : (
+                        <p className={styles.prereqSubtitle}>{status.message}</p>
+                    )}
+                </div>
+
+                {allMissing.length > 0 && (
+                    <div className={styles.prereqFooter}>
+                        <button
+                            className={styles.markAllBtn}
+                            onClick={(e) => { e.stopPropagation(); allMissing.forEach(c => addCourse(c)); }}
+                        >
+                            Mark all as completed
+                        </button>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <>
             {courseInfoPopup()}
-            {toast && <div className={styles.toast}>{toast}</div>}
-            <div className={styles.node} style={nodeStyle()} onClick={handleNodeClick}>
+            {prereqModal()}
+            <div className={`${styles.node} ${nodeStateClass()}`} onClick={handleNodeClick}>
                 <div className={styles.nodeContent}>
-                    <span className={styles.courseCode}>{course}</span>
+                    <span className={styles.courseCode}>
+                        {coursesTaken.has(course) && (
+                            <span className={styles.checkBadge}>✓</span>
+                        )}
+                        {course}
+                    </span>
                     <span className={styles.courseName}>{name}</span>
                 </div>
                 <button className={styles.infoBtn} onClick={handleInfoClick}>i</button>

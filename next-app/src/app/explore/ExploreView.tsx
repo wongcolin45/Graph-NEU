@@ -3,7 +3,7 @@
 import ReactFlow, {
     Node, Edge, ReactFlowProvider,
     Background, BackgroundVariant,
-    Controls,
+    Controls, Panel,
     useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -24,7 +24,7 @@ import styles from './explore.module.css';
 const nodeTypes = { graphNode: CourseNode };
 const edgeTypes = { graphEdge: CourseEdge };
 
-export type CourseStatus = { satisfied: boolean; message: string; };
+export type CourseStatus = { satisfied: boolean; message: string; missing_groups: string[][]; };
 export type CourseStatusMap = Map<string, CourseStatus>;
 
 
@@ -37,13 +37,6 @@ const FlowCanvas = ({
     edges: Edge[];
 }) => {
     const { fitView } = useReactFlow();
-
-    useEffect(() => {
-        if (!nodes.length) return;
-        // Small delay lets ReactFlow finish its layout pass before fitting
-        const id = setTimeout(() => fitView({ padding: 0.15, duration: 500 }), 60);
-        return () => clearTimeout(id);
-    }, [nodes]);
 
     return (
         <ReactFlow
@@ -64,6 +57,27 @@ const FlowCanvas = ({
                 color="#d1d5db"
             />
             <Controls showInteractive={false} />
+            <Panel position="bottom-right">
+                <button
+                    onClick={() => fitView({ padding: 0.15, duration: 400 })}
+                    title="Fit graph to screen"
+                    style={{
+                        background: '#fff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: '#374151',
+                        cursor: 'pointer',
+                        boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                        marginBottom: '8px',
+                        marginRight: '8px',
+                    }}
+                >
+                    Fit view
+                </button>
+            </Panel>
         </ReactFlow>
     );
 };

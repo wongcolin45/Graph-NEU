@@ -74,7 +74,7 @@ class CourseService:
                 missing.append(group_missing)
 
         if not missing:
-            return {"satisfied": True, "message": "n/a"}
+            return {"satisfied": True, "message": "n/a", "missing_groups": []}
 
         parts: list[str] = []
         for group in missing:
@@ -84,7 +84,7 @@ class CourseService:
                 parts.append(f"Take: {group[0]};")
             else:
                 parts.append("Take: " + " or ".join(group) + ";")
-        return {"satisfied": False, "message": "".join(parts)}
+        return {"satisfied": False, "message": "".join(parts), "missing_groups": missing}
 
 
     async def get_select_courses(
