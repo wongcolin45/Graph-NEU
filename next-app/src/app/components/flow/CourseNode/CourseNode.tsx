@@ -2,9 +2,7 @@
 import {Handle, Position} from 'reactflow';
 import styles from './CourseNode.module.css'
 import React, {JSX, useEffect, useState, useCallback} from 'react';
-import axios from 'axios';
-import {createPortal} from "react-dom";
-import type {CourseStatusMap, CourseStatus} from "@/app/explore/page";
+import type {CourseStatusMap, CourseStatus} from "@/app/explore/ExploreView";
 import useUserDataStore from "@/app/store/useUserDataStore";
 
 interface CourseData {
@@ -21,11 +19,9 @@ const CourseNode = ({ data }: { data: CourseData}) => {
 
     const {label, course, name, description, credits, attributes, courseStatusMap} = data;
 
-    // import global state from Zustand
     const coursesTaken = useUserDataStore((state) => state.coursesTaken);
     const addCourse = useUserDataStore((state) => state.addCourse);
     const removeCourse = useUserDataStore((state) => state.removeCourse);
-
 
     const canTake = useCallback((): boolean => {
         const id = course.replace(/\s+/g, '');
@@ -40,74 +36,87 @@ const CourseNode = ({ data }: { data: CourseData}) => {
     }, [coursesTaken, canTake]);
 
     const [showCourseInfo, setShowCourseInfo] = useState<boolean>(false);
+    const [toast, setToast] = useState<string | null>(null);
 
     const handleNodeClick = () => {
         if (canTake()) {
-            if (coursesTaken.has(course)){
+            if (coursesTaken.has(course)) {
                 removeCourse(course);
             } else {
                 addCourse(course);
             }
-            return
+            return;
         }
         const status: CourseStatus | undefined = courseStatusMap.get(course.replace(/\s+/g, ''));
-
         if (status != undefined) {
-            console.log('status ' + status.message)
-            alert(status.message);
-        } else {
-            console.log('status not found for '+course);
+            setToast(status.message);
+            setTimeout(() => setToast(null), 3500);
         }
     };
 
-    const handleCourseInfoClick = (e: React.MouseEvent) => {
+    const handleInfoClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         setShowCourseInfo(prev => !prev);
-    }
+    };
 
-    const courseInfo = (): JSX.Element => {
-        if (!showCourseInfo) {
-            return <></>
+    const handleCloseInfo = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowCourseInfo(false);
+    };
+
+    const nodeStyle = () => {
+        if (coursesTaken.has(course)) {
+            return { background: '#f3f4f6', borderColor: '#d1d5db', opacity: 0.75 };
         }
+        if (canTake()) {
+            return { background: '#eff6ff', borderColor: '#3b82f6', borderStyle: 'solid' };
+        }
+        return { background: '#fafafa', borderColor: '#e5e7eb', borderStyle: 'dashed', opacity: 0.6 };
+    };
+
+    const courseInfoPopup = (): JSX.Element => {
+        if (!showCourseInfo) return <></>;
         return (
             <div className={styles.courseInfo}>
-                <h3>{label}</h3>
-                <p>{description}</p>
-                <span><strong>{'Attribute(s): '}</strong>{attributes}</span>
+                <div className={styles.courseInfoHeader}>
+                    <div>
+                        <span className={styles.courseInfoCode}>{course}</span>
+                        <h3 className={styles.courseInfoName}>{name}</h3>
+                    </div>
+                    <button className={styles.closeBtn} onClick={handleCloseInfo}>✕</button>
+                </div>
+                <div className={styles.courseInfoBody}>
+                    {description && <p className={styles.courseInfoDesc}>{description}</p>}
+                    <div className={styles.courseInfoMeta}>
+                        {credits > 0 && (
+                            <span className={`${styles.metaPill} ${styles.metaPillBlue}`}>
+                                {credits} {credits === 1 ? 'credit' : 'credits'}
+                            </span>
+                        )}
+                        {attributes && attributes.split(',').map((attr, i) => (
+                            <span key={i} className={styles.metaPill}>{attr.trim()}</span>
+                        ))}
+                    </div>
+                </div>
             </div>
-        )
-    }
+        );
+    };
 
-    const nodeStyle = () =>{
-        if (coursesTaken.has(course)) {
-            return { backgroundColor: '#e0e0e0', opacity: 0.8 };
-        }
-
-        if (canTake()) {
-            return { backgroundColor: '#e6f7ff', border: '2px solid #2196f3' };
-        }
-
-        return { backgroundColor: '#f5f5f5', border: '2px dashed #ccc', opacity: 0.5 };
-
-    }
-
-    //div style={{position: 'relative', display: 'inline-block'}}
     return (
         <>
-            {courseInfo()}
+            {courseInfoPopup()}
+            {toast && <div className={styles.toast}>{toast}</div>}
             <div className={styles.node} style={nodeStyle()} onClick={handleNodeClick}>
-                <span>
-                    <strong>{course}</strong>{`: ${name}`}
-                </span>
-                    <button onClick={(e) => handleCourseInfoClick(e)}>📖</button>
-                    <Handle type="target" position={Position.Top}/>
-                    <Handle type="source" position={Position.Bottom}/>
+                <div className={styles.nodeContent}>
+                    <span className={styles.courseCode}>{course}</span>
+                    <span className={styles.courseName}>{name}</span>
+                </div>
+                <button className={styles.infoBtn} onClick={handleInfoClick}>i</button>
+                <Handle type="target" position={Position.Top}/>
+                <Handle type="source" position={Position.Bottom}/>
             </div>
         </>
     );
-
-
-
-}
+};
 
 export default CourseNode;

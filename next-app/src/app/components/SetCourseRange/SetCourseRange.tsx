@@ -29,7 +29,7 @@ const SetCourseRange = () => {
     return (
         <div className={styles.setCourseRange}>
             <h2>Course ID Range</h2>
-            <Box sx={{ width: '330px', marginLeft: '10px' }}>
+            <Box sx={{ width: '90%', marginLeft: '6px' }}>
                 <Slider
                     value={value}
                     onChange={handleChange}

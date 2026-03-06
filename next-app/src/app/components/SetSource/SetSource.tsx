@@ -3,6 +3,7 @@ import styles from '@/app/components/SetSource/SetSource.module.css';
 import useGraphStore from '@/app/store/useGraphStore';
 import {BASE_URL} from "@/app/api";
 import axios from "axios";
+import {useRouter} from "next/navigation";
 
 
 interface CourseResult {
@@ -15,11 +16,31 @@ interface CourseResult {
 const SetSource = (): JSX.Element => {
 
     const setSource: (newSource: string) => void = useGraphStore(s => s.setSource);
+    const source: string = useGraphStore(s => s.source);
+    const router = useRouter();
 
     const [input, setInput] = useState<string>('');
     const [editingSource, setEditingSource] = useState<boolean>(false);
     const [sourceSelection, setSourceSelection] = useState<CourseResult>();
     const [closestResults, setClosestResults] = useState<CourseResult[]>([]);
+
+    // Sync sidebar display when source is set externally (e.g. direct URL navigation)
+    useEffect((): void => {
+        if (!source) { setSourceSelection(undefined); return; }
+        if (sourceSelection?.course === source) return;
+        const fetchCourse = async (): Promise<void> => {
+            try {
+                const url = `${BASE_URL}/api/course/search/${encodeURIComponent(source)}/1`;
+                const response = await axios.get(url);
+                if (response.data.length > 0) {
+                    setSourceSelection(response.data[0]);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        fetchCourse();
+    }, [source]);
 
     useEffect((): void => {
         const updateClosestResults: () => void = async (): Promise<void> => {
@@ -55,6 +76,7 @@ const SetSource = (): JSX.Element => {
         setSource(result.course);
         setEditingSource(false);
         setSourceSelection(result);
+        router.push(`/explore/${encodeURIComponent(result.course)}`);
     }
 
     const handleKeyDown = (e: React.KeyboardEvent): void => {
@@ -71,6 +93,7 @@ const SetSource = (): JSX.Element => {
         setInput('');
         setSource('');
         setSourceSelection(undefined);
+        router.push('/explore');
     }
 
 
@@ -129,8 +152,8 @@ const SetSource = (): JSX.Element => {
 
             </div>
             <div className={styles.buttonGroup}>
-                <button className={styles.editButton} onClick={handleEditClick}>{'edit️'}</button>
-                <button className={styles.clearButton} onClick={handleResetClick}>{'clear'}</button>
+                <button className={styles.editButton} onClick={handleEditClick}>{'Edit'}</button>
+                <button className={styles.clearButton} onClick={handleResetClick}>{'Clear'}</button>
             </div>
         </div>
     )

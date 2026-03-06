@@ -20,8 +20,8 @@ class GraphService:
         layer_to_nodes = self._reduce_crossings(G, layer_to_nodes, iterations=8)
 
         positions: dict[str, dict[str, float]] = {}
-        horizontal_spacing = 300
-        vertical_spacing = 250
+        horizontal_spacing = 260
+        vertical_spacing = 160
 
         longest_layer_size = self._get_longest_layer(layers)
 

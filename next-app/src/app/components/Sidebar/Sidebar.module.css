@@ -1,49 +1,26 @@
-
 .sidebar {
-    z-index: 99999;
-    width: 430px;
+    width: 360px;
     flex-shrink: 0;
     position: sticky;
-
-    height: 100vh;
-    background: #fff;
-    border-right: 1px solid #ddd;
-    overflow-y: auto;
-
     top: var(--nav-h);
     height: calc(100vh - var(--nav-h));
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    overflow-y: auto;
+    z-index: 99999;
 }
-
-.open {
-    left: 0;
-}
-
-.closeBtn {
-    position: absolute;
-    top: 10px;
-    right: 50px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: black;
-    cursor: pointer;
-}
-
 
 .content {
-    margin-top: 0px;
-    padding: 20px;
-    text-align: left;         /* 👈 ensures inline text is left-aligned */
-    align-items: flex-start;  /* 👈 for flex children */
+    padding: 20px 20px 32px;
 }
 
 .content h1 {
-    font-size: 36px;
-    margin-bottom: 0px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin: 0 0 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e5e7eb;
 }
-
-
-
-
-
-

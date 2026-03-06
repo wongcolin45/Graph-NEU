@@ -1,8 +1,7 @@
 'use client';
 
-import {BaseEdge, EdgeLabelRenderer, getBezierPath, MarkerType} from 'reactflow';
-import {JSX} from "react";
-import {CourseStatus} from "@/app/explore/page";
+import {BaseEdge, getSmoothStepPath, MarkerType} from 'reactflow';
+import {CourseStatus} from "@/app/explore/ExploreView";
 import useUserDataStore from "@/app/store/useUserDataStore";
 
 interface EdgeData {
@@ -22,11 +21,12 @@ const CourseEdge = ({id, source, target,
 
     const coursesTaken = useUserDataStore((state) => state.coursesTaken);
 
-    const [edgePath, labelX, labelY] = getBezierPath({
+    const [edgePath] = getSmoothStepPath({
         sourceX,
         sourceY,
         targetX,
         targetY,
+        borderRadius: 6,
     });
 
 
@@ -42,27 +42,22 @@ const CourseEdge = ({id, source, target,
 
         if (status.satisfied) {
             if (coursesTaken.has(course)) {
-                return {stroke: '#A9A9A9', strokeWidth: 1};
+                return { stroke: '#d1d5db', strokeWidth: 1.5 };
             }
-            return {stroke: '#007bff', strokeWidth: 1};
+            return { stroke: '#3b82f6', strokeWidth: 2 };
         }
-        return {stroke: 'gray', strokeDasharray: '5 5', strokeWidth: 1};
+        return { stroke: '#d1d5db', strokeDasharray: '5 4', strokeWidth: 1.5 };
 
 
     }
 
 
     return (
-        <>
-            <BaseEdge
-                path={edgePath}
-                markerEnd = {MarkerType.ArrowClosed}
-                style={getStyle()}
-            />
-            <EdgeLabelRenderer>
-              <div></div>
-            </EdgeLabelRenderer>
-        </>
+        <BaseEdge
+            path={edgePath}
+            markerEnd={MarkerType.ArrowClosed}
+            style={getStyle()}
+        />
     );
 };
 

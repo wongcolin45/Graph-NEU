@@ -16,8 +16,7 @@ const Sidebar = (): JSX.Element => {
     return (
         <div className={styles.sidebar}>
             <div className={styles.content}>
-                <h1>Customize Graph</h1>
-                <p>Modify your graph here.</p>
+                <h1>Filters</h1>
                 <SetSource/>
                 <SetDepartment/>
                 <SetCourseRange/>
