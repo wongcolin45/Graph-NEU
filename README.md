@@ -1,15 +1,25 @@
-# Course Roadmap Visualizer
+# NEU Roadmaps
 
-An interactive web application that helps Northeastern students visualize their course roadmap to graduation. Users can explore course prerequisites, track progress, and see branching paths for potential majors or minors.
+An interactive web application that helps Northeastern students visualize their course roadmap to graduation. Explore course prerequisites, track progress, and see branching paths for potential majors or minors.
 
-Quick Demo:  https://vimeo.com/1081147967/1d5ee570a3?share=copy
+## Tech Stack
 
+- **Frontend:** Next.js 15, React 19, React Flow, MUI
+- **Backend:** FastAPI (Python)
+- **Database:** PostgreSQL (populated via web scraping)
+
+## Hosting
+
+| Component | Service |
+|-----------|---------|
+| Frontend | Vercel |
+| Backend | Render |
+| Database | Supabase / Neon |
 
 ## Features
 
-- 📈 Visual course graphs using **React Flow**
-- ✅ Track completed courses with real-time updates
-- 📚 Fetch course data from **PostgreSQL** Database populated through webscraping
-- 🔁 View dependencies and future options for any course
-- 🧠 Built with intelligent backend logic via **FastAPI**
-
+- Visual course graphs using **React Flow**
+- Track completed courses with real-time updates
+- Fetch course data from a **PostgreSQL** database populated through web scraping
+- View dependencies and future options for any course
+- Intelligent backend logic via **FastAPI**
