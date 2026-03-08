@@ -22,10 +22,10 @@ class GraphService:
         positions: dict[str, dict[str, float]] = {}
 
         if layout == 'TD':
-            layer_spacing = 160   # vertical gap between rows
+            layer_spacing = 180   # vertical gap between rows
             node_spacing = 260    # horizontal gap between nodes (node width is 210px)
         else:  # LR
-            layer_spacing = 300   # horizontal gap between columns
+            layer_spacing = 340   # horizontal gap between columns (extra room for edge routing)
             node_spacing = 160    # vertical gap between nodes (node height ~50px)
 
         longest_layer_size = self._get_longest_layer(layers)

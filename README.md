@@ -8,13 +8,6 @@ An interactive web application that helps Northeastern students visualize their 
 - **Backend:** FastAPI (Python)
 - **Database:** PostgreSQL (populated via web scraping)
 
-## Hosting
-
-| Component | Service |
-|-----------|---------|
-| Frontend | Vercel |
-| Backend | Render |
-| Database | Supabase / Neon |
 
 ## Features
 

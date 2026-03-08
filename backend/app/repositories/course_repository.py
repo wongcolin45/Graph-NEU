@@ -1,5 +1,5 @@
 # app/repositories/course_repository.py
-from sqlalchemy import String, Integer, cast, select
+from sqlalchemy import String, Integer, cast, select, or_
 from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.CourseFilter import CourseFilter
@@ -162,14 +162,20 @@ class CourseRepository:
 
 
     async def get_courses_like(self, search_query: str) -> list[dict]:
+        # Strip spaces so "CS 3000" matches the stored "CS3000"
+        normalized = search_query.replace(" ", "")
+        code_col = DepartmentORM.prefix + cast(CourseORM.course_code, String)
         query = (
             select(
-                (DepartmentORM.prefix + cast(CourseORM.course_code, String)).label("course"),
+                code_col.label("course"),
                 CourseORM.name.label("name"),
             )
             .select_from(CourseORM)
             .join(DepartmentORM, DepartmentORM.department_id == CourseORM.department_id)
-            .where((DepartmentORM.prefix + cast(CourseORM.course_code, String) + CourseORM.name).ilike(f"%{search_query}%"))
+            .where(or_(
+                CourseORM.name.ilike(f"%{search_query}%"),
+                code_col.ilike(f"%{normalized}%"),
+            ))
         )
         result = await self.db.execute(query)
         return [dict(row._mapping) for row in result.all()]

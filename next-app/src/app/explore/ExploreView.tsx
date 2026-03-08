@@ -4,7 +4,8 @@ import ReactFlow, {
     Node, Edge, ReactFlowProvider,
     Background, BackgroundVariant,
     Controls, Panel,
-    useReactFlow,
+    useReactFlow, MarkerType,
+    useNodesState, useEdgesState,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import React, {JSX, useEffect, useState} from "react";
@@ -44,23 +45,35 @@ const panelBtnStyle: React.CSSProperties = {
     marginRight: '8px',
 };
 
-const FlowCanvas = ({ nodes, edges, layout, onLayoutChange }: {
+const FlowCanvas = ({ nodes: initialNodes, edges: initialEdges, layout, onLayoutChange }: {
     nodes: Node[];
     edges: Edge[];
     layout: LayoutDirection;
     onLayoutChange: (l: LayoutDirection) => void;
 }) => {
     const { fitView } = useReactFlow();
+    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+    const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+
+    useEffect(() => {
+        setNodes(initialNodes);
+        setTimeout(() => fitView({ padding: 0.15, duration: 400 }), 50);
+    }, [initialNodes]);
 
     return (
         <ReactFlow
             nodes={nodes}
             edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             nodesDraggable={true}
-            minZoom={0.1}
-            maxZoom={2}
+            panOnDrag={true}
+            zoomOnScroll={true}
+            zoomOnPinch={true}
+            minZoom={0.05}
+            maxZoom={3}
             proOptions={{ hideAttribution: true }}
             style={{ width: '100%', height: '100%' }}
         >
@@ -198,6 +211,7 @@ const ExploreView = ({ initialCourse }: { initialCourse?: string }): JSX.Element
         const styledEdges: Edge[] = graph.edges.map(edge => ({
             ...edge,
             type: 'graphEdge',
+            markerEnd: { type: MarkerType.ArrowClosed, width: 18, height: 18 },
             data: { courseStatusMap }
         }));
 

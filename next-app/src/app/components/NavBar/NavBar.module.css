@@ -46,17 +46,3 @@
     margin-left: 8px;
     letter-spacing: -0.3px;
 }
-
-.login {
-    font-weight: 600;
-    border: 1.5px solid #0070f3;
-    color: #0070f3 !important;
-    padding: 6px 14px;
-    border-radius: 6px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.login:hover {
-    background-color: #0070f3;
-    color: #fff !important;
-}

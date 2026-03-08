@@ -149,7 +149,12 @@ class CourseService:
             if course_code is None or name is None:
                 continue
 
-            key = f"{course_code} {name}"
+            # Add space between dept prefix and number so "CS 3000" matches "CS3000"
+            spaced_code = ''.join(
+                c + ' ' if c.isalpha() and i + 1 < len(course_code) and course_code[i + 1].isdigit() else c
+                for i, c in enumerate(course_code)
+            )
+            key = f"{spaced_code} {name}"
             items[key] = {"course": course_code, "name": name}
 
         # Fuzzy match against the combined "code name" key
